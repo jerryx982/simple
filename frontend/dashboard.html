@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleCrypto | Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="logo">SimpleCrypto</a>
+        <div class="user-menu-container">
+            <button id="user-menu-btn" class="user-menu-btn">
+                <div class="profile-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </div>
+                <span id="user-name-display">User</span>
+                <svg class="chevron" viewBox="0 0 24 24">
+                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                </svg>
+            </button>
+            <div id="user-dropdown" class="user-dropdown">
+                <a href="profile.html">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    Profile
+                </a>
+                <a href="security.html">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L6.16 7.96c-.11.2 0 .47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.11-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                    </svg>
+                    Settings (Security)
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="#" id="logout-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="index.html#plans">
+                <svg viewBox="0 0 24 24">
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z" />
+                </svg>
+                New Investment
+            </a>
+            <a href="deposit.html">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+                Deposit
+            </a>
+            <a href="kyc.html">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                KYC Verification
+            </a>
+            <a href="profile.html">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                Profile
+            </a>
+            <a href="security.html">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                </svg>
+                Security
+            </a>
+            <a href="withdraw.html" id="withdraw-link-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                </svg>
+                Withdraw
+            </a>
+        </aside>
+
+        <!-- Toggle Button -->
+        <button id="sidebar-toggle" class="sidebar-toggle-btn">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+        </button>
+
+        <main class="main-content">
+            <section style="margin-bottom: 2rem;">
+                <h2>Your Account</h2>
+
+                <div class="account-overview-grid">
+                    <!-- Balance Box -->
+                    <div class="card balance-card">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">Available Balance (Simulated USD)
+                        </div>
+                        <div id="balance-display"
+                            style="font-size: 2rem; font-weight: bold; color: var(--success); margin: 0.5rem 0;">$0.00
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">+2.4% this week</div>
+                    </div>
+
+                    <!-- Portfolio Chart -->
+                    <div class="card chart-card">
+                        <div class="chart-header">
+                            <h3>Portfolio Performance</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn active" data-period="D">D</button>
+                                <button class="chart-btn" data-period="W">W</button>
+                                <button class="chart-btn" data-period="M">M</button>
+                                <button class="chart-btn" data-period="YTD">YTD</button>
+                                <button class="chart-btn" data-period="ALL">ALL</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Active Investments</h3>
+                <div id="investments-list" class="grid" style="grid-template-columns: 1fr;">
+                    <!-- Investments loaded via JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="withdrawal-ticker">
+        <div id="withdrawal-item"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

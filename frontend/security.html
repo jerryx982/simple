@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleCrypto | Security</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="logo">SimpleCrypto</a>
+        <div class="user-menu-container">
+            <button id="user-menu-btn" class="user-menu-btn">
+                <div class="profile-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </div>
+                <span id="user-name-display">User</span>
+                <svg class="chevron" viewBox="0 0 24 24">
+                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                </svg>
+            </button>
+            <div id="user-dropdown" class="user-dropdown">
+                <a href="profile.html">Profile</a>
+                <a href="security.html">Security</a>
+                <div class="dropdown-divider"></div>
+                <a href="#" id="logout-btn">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="index.html#plans">New Investment</a>
+            <a href="deposit.html">Deposit</a>
+            <a href="kyc.html">KYC Verification</a>
+            <a href="profile.html">Profile</a>
+            <a href="security.html" class="active">Security</a>
+            <a href="withdraw.html" id="withdraw-link-btn">Withdraw</a>
+        </aside>
+
+        <button id="sidebar-toggle" class="sidebar-toggle-btn">
+            <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;">
+                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+        </button>
+
+        <main class="main-content">
+            <h2 style="margin-bottom: 2rem;">Security Settings</h2>
+
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <h3>Google Authenticator (2FA)</h3>
+                        <p style="color: var(--text-secondary);">Protect your account and transactions.</p>
+                    </div>
+                    <div id="2fa-status-badge"
+                        style="padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; background: #333; color: #fff;">
+                        Retrieving Status...
+                    </div>
+                </div>
+
+                <!-- Setup Section (Hidden by default) -->
+                <div id="2fa-setup-section" style="display: none;">
+                    <div
+                        style="background: rgba(88, 166, 255, 0.1); border: 1px solid var(--accent-color); padding: 1.5rem; border-radius: 8px;">
+                        <h4 style="color: var(--accent-color); margin-bottom: 1rem;">1. Scan QR Code</h4>
+
+                        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                            <div style="background: white; padding: 1rem; border-radius: 4px;">
+                                <img id="qr-code-img" src="" alt="QR Code"
+                                    style="width: 150px; height: 150px; display: block;">
+                            </div>
+                            <div style="flex: 1;">
+                                <p style="margin-bottom: 0.5rem;">Or look for the secret key if you can't scan:</p>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                    <input type="text" id="secret-key-display" readonly
+                                        style="flex: 1; padding: 0.5rem; background: #222; border: 1px solid #444; color: white; font-family: monospace;">
+                                    <button onclick="copySecret()" class="btn btn-outline">Copy</button>
+                                </div>
+                                <p style="font-size: 0.9rem; color: var(--text-secondary);">Download Google
+                                    Authenticator on your phone to scan this code.</p>
+                            </div>
+                        </div>
+
+                        <h4 style="color: var(--accent-color); margin: 2rem 0 1rem;">2. Enter 6-Digit Code</h4>
+                        <div style="max-width: 300px;">
+                            <input type="text" id="setup-otp-input" placeholder="e.g. 123456" maxlength="6"
+                                style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+                            <button onclick="verifyAndEnable2FA()" class="btn btn-block">Verify & Enable</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status / Disable Section -->
+                <div id="2fa-active-section" style="display: none; text-align: center; padding: 2rem;">
+                    <svg viewBox="0 0 24 24"
+                        style="width: 64px; height: 64px; fill: var(--success); margin-bottom: 1rem;">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                    </svg>
+                    <h3>2FA is Enabled</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Your account is secured with Google
+                        Authenticator.</p>
+                    <button onclick="showDisableModal()" class="btn btn-outline"
+                        style="border-color: var(--error); color: var(--error);">Disable 2FA</button>
+                </div>
+
+                <!-- Init Button -->
+                <div id="2fa-init-section" style="display: none; text-align: center; padding: 2rem;">
+                    <button onclick="start2FASetup()" class="btn">Enable 2FA</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/security.js"></script>
+</body>
+
+</html>

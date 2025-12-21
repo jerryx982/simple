@@ -1,0 +1,61 @@
+document.addEventListener('DOMContentLoaded', async () => {
+    await redirectIfAuth();
+
+    const form = document.getElementById('signup-form');
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('strength-bar');
+    const errorMsg = document.getElementById('error-msg');
+
+    // Password strength meter
+    passwordInput.addEventListener('input', () => {
+        const val = passwordInput.value;
+        let strength = 0;
+        if (val.length >= 10) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[a-z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+        if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+        const width = (strength / 5) * 100;
+        strengthBar.style.width = width + '%';
+
+        if (strength < 3) strengthBar.style.backgroundColor = 'var(--error)';
+        else if (strength < 5) strengthBar.style.backgroundColor = 'orange';
+        else strengthBar.style.backgroundColor = 'var(--success)';
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = 'none';
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = passwordInput.value;
+        const confirm = document.getElementById('confirm-password').value;
+
+        if (password !== confirm) {
+            showError('Passwords do not match');
+            return;
+        }
+
+        // Strict validation
+        const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{10,})");
+        if (!strongRegex.test(password)) {
+            showError('Password does not meet requirements');
+            return;
+        }
+
+        const res = await API.post('/api/auth/signup', { name, email, password });
+        if (res.ok) {
+            window.showToastAfterRedirect('Account created successfully!', 'success');
+            window.location.href = 'dashboard.html';
+        } else {
+            showError(res.error || 'Signup failed');
+        }
+    });
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+    }
+});

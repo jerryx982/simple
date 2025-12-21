@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Database
+server/db.json
+
+# Uploads
+server/uploads/
+
+# Logs
+npm-debug.log
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary/Test files
+cookie_signup.txt
+test_login.js

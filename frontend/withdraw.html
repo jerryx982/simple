@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw Crypto | SimpleCrypto</title>
+    <link rel="stylesheet" href="css/withdraw.css">
+    <!-- Re-use main styles for header usage if needed, but withdraw.css covers it -->
+</head>
+
+<body>
+    <header>
+        <a href="dashboard.html" class="logo">SimpleCrypto</a>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="dashboard.html" style="color: white; text-decoration: none;">Dashboard</a>
+            <div class="profile-icon" style="background:#333; width:32px; height:32px; border-radius:50%;"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Withdrawal Form -->
+        <main>
+            <div class="card">
+                <h2>Withdraw Crypto</h2>
+
+                <div class="form-group">
+                    <label>Select Coin</label>
+                    <select id="coin-select">
+                        <option value="USDT">USDT (Tether)</option>
+                        <option value="BTC">BTC (Bitcoin)</option>
+                        <option value="ETH">ETH (Ethereum)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Network</label>
+                    <select id="network-select">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Wallet Address</label>
+                    <input type="text" id="address-input" placeholder="Paste your address here">
+                    <div style="font-size:0.75rem; color: #666; margin-top: 0.25rem;">Please double-check the address
+                        and network.</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="balance-info">
+                        <label style="margin:0;">Amount</label>
+                        <span>Available: <span id="available-balance" class="available-balance">Loading...</span></span>
+                    </div>
+                    <div style="position: relative;">
+                        <input type="number" id="amount-input" placeholder="Min 10 USDT" step="any">
+                        <span id="withdraw-all"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-size: 0.8rem; cursor: pointer; font-weight: bold;">ALL</span>
+                    </div>
+                    <div id="error-msg" class="error-msg"></div>
+                </div>
+
+                <div class="fee-info">
+                    <div class="fee-row">
+                        <span>Withdrawal Fee</span>
+                        <span id="fee-display">0.00</span>
+                    </div>
+                    <div class="fee-row total">
+                        <span>Total Deduction (incl. Fee)</span>
+                        <span id="total-deduct">0.00</span>
+                    </div>
+                    <div class="note">
+                        * The network fee is paid to the blockchain miners/validators. <br>
+                        * Ensure the receiving address supports the selected network.
+                    </div>
+                </div>
+
+                <button id="submit-btn" class="btn-withdraw" disabled>Submit Withdrawal</button>
+            </div>
+        </main>
+
+        <!-- Sidebar / History -->
+        <aside>
+            <div class="card">
+                <h2>Important Note</h2>
+                <div class="note" style="margin-top:0;">
+                    <ul>
+                        <li style="margin-bottom:0.5rem;">Do not withdraw to ICO or Crowdfunding addresses.</li>
+                        <li style="margin-bottom:0.5rem;">Withdrawals are usually processed within 30 minutes.</li>
+                        <li>Large withdrawals may require manual audit (up to 24h).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h2>Recent Withdrawals</h2>
+                <div id="history-list">
+                    <!-- Loaded via JS -->
+                    <div style="text-align:center; padding:1rem; color:#666;">Loading...</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Withdrawal</h3>
+            <div style="text-align: left; margin: 1.5rem 0; font-size: 0.9rem; line-height: 1.6;">
+                <div style="display:flex; justify-content:space-between;"><span>Coin:</span> <span id="confirm-coin"
+                        style="font-weight:bold;"></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Network:</span> <span
+                        id="confirm-network" style="font-weight:bold;"></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Address:</span> <span
+                        id="confirm-address" style="font-weight:bold; word-break: break-all;"></span></div>
+                <hr style="border: 0; border-top:1px solid #333; margin: 0.5rem 0;">
+                <div style="display:flex; justify-content:space-between;"><span>Amount:</span> <span
+                        id="confirm-amount"></span></div>
+                <div style="display:flex; justify-content:space-between;"><span>Fee:</span> <span
+                        id="confirm-fee"></span></div>
+
+                <div style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                    <label style="display:block; margin-bottom:0.25rem; color:#888;">Google Authenticator Code</label>
+                    <input type="text" id="withdraw-otp-input" placeholder="Enter 6-digit code" maxlength="6"
+                        style="width: 100%; padding: 0.8rem; text-align: center; letter-spacing: 3px; font-weight: bold;background: #222; border: 1px solid #444; color: white; border-radius: 4px;">
+                </div>
+
+                <div
+                    style="display:flex; justify-content:space-between; color: var(--primary-color); font-weight:bold;">
+                    <span>Total Deduct:</span> <span id="confirm-total"></span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-btn" class="btn-cancel">Cancel</button>
+                <button id="confirm-btn" class="btn-withdraw"
+                    style="margin-top:0; width:auto; padding: 0.8rem 2rem;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/withdraw.js"></script>
+</body>
+
+</html>

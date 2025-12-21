@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleCrypto | Smart Investment</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="logo">SimpleCrypto</a>
+        <nav>
+            <a href="signin.html">Sign In</a>
+            <a href="signup.html" class="btn">Start Investing</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>Grow your crypto, safely and simply</h1>
+            <p>SimpleCrypto offers straightforward, transparent crypto investment plans with easy on-chain deposits. No
+                hidden fees — just clear terms and real-time tracking.</p>
+            <p>
+                At SimpleCrypto we combine disciplined investment plans with transparent on-chain payments.
+                Choose a plan that suits your time horizon — each plan displays potential returns, minimum deposit, and
+                a guaranteed term.
+                Funds are handled on-chain through your wallet so you stay in control.
+                Start small, track returns in real time, and withdraw anytime after a plan matures.
+            </p>
+            <a href="signup.html" class="btn" style="font-size: 1.2rem; margin-top: 1rem;">Get Started</a>
+        </section>
+
+        <section id="plans">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Investment Plans</h2>
+            <div class="grid" id="plans-container">
+                <!-- Plans loaded via JS -->
+                <div class="card">Loading plans...</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Load plans
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await checkAuth();
+            if (user) {
+                // Update Nav
+                const nav = document.querySelector('nav');
+                nav.innerHTML = `
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="#" id="logout-btn" class="btn">Logout</a>
+                 `;
+                document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await API.post('/api/auth/logout', {});
+                    window.location.reload();
+                });
+            }
+
+            try {
+                const plans = await API.get('/api/plans');
+                const container = document.getElementById('plans-container');
+                container.innerHTML = '';
+
+                plans.forEach(plan => {
+                    const el = document.createElement('div');
+                    el.className = 'card';
+                    // Determine link
+                    const investLink = user ? `deposit.html?plan=${plan.id}` : 'signup.html';
+
+                    el.innerHTML = `
+                        <h3>${plan.title}</h3>
+                        <div class="roi">${plan.roiPercent}% ROI <span style="font-size:0.8rem; color:#8b949e">/ ${plan.termDays < 31 ? 'mo' : 'term'}</span></div>
+                        <div class="card-meta">
+                            <p>Min Deposit: <strong>${plan.minDeposit} ETH</strong></p>
+                            <p>Term: <strong>${plan.termDays} Days</strong></p>
+                        </div>
+                        <p style="margin-bottom: 2rem; color: #8b949e;">${plan.description}</p>
+                        ${plan.id === 'free-starter' ?
+                            `<button onclick="activateFreePlan()" class="btn btn-block" style="background: linear-gradient(90deg, #00C9FF, #92FE9D); color: #000; border:none; font-weight:bold;">Activate Free Trial</button>` :
+                            `<a href="${investLink}" class="btn btn-block btn-outline">Invest Now</a>`
+                        }
+                    `;
+                    container.appendChild(el);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        // Activation Logic
+        async function activateFreePlan() {
+            // Check auth first
+            const user = await checkAuth();
+            if (!user) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            if (confirm("Activate $2000 Free Plan for 1 Hour?")) {
+                try {
+                    const res = await API.post('/api/invest/activate-free', {});
+                    if (res.ok) {
+                        await showAlert("Free Plan Activated Successfully! Profit adds in 1 hour.");
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        await showAlert(res.error || "Failed to activate");
+                    }
+                } catch (e) {
+                    await showAlert("Error activating plan");
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
