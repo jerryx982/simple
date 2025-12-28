@@ -56,23 +56,38 @@ const syncUsers = async () => {
         // Create a Map by ID to ensure uniqueness and merge properties
         const userMap = new Map();
 
-        // Add local users first
-        localUsers.forEach(u => userMap.set(u.id, u));
-
-        // Add remote users (overwriting logic: remote wins? or just missing ones? 
-        // "let user information authomatically stored from github" suggests GitHub is source of truth for new accounts.
-        // We'll merge: if exists, keep local (updates might be local), if user only on GitHub, add them.
+        // A. Add Remote GitHub users (Base Layer)
+        console.log("   [Merge] Applying GitHub users (Base)...");
         remoteUsers.forEach(u => {
-            if (!userMap.has(u.id)) {
-                userMap.set(u.id, u);
-            } else {
-                // If ID matches, we might want to ensure critical fields are set?
-                // For now, let's trust uniqueness of ID.
-            }
+            if (u.id) userMap.set(u.id, u);
+        });
+
+        // B. Add MongoDB users (Render/Hosted Data - Middle Layer)
+        // This pulls new accounts created on the live site
+        try {
+            const mongoUsers = await User.find({}).lean();
+            console.log(`   [Merge] Applying ${mongoUsers.length} MongoDB users (Middle)...`);
+
+            mongoUsers.forEach(u => {
+                const { _id, __v, ...cleanUser } = u;
+                if (u.id) {
+                    // Overwrite GitHub data, or add new
+                    userMap.set(u.id, cleanUser);
+                }
+            });
+        } catch (mongoErr) {
+            console.error("[Mongo] Error fetching users:", mongoErr.message);
+        }
+
+        // C. Add Local users (Top Layer - Priority)
+        // Local edits override EVERYTHING.
+        console.log("   [Merge] Applying Local users (Priority)...");
+        localUsers.forEach(u => {
+            if (u.id) userMap.set(u.id, u);
         });
 
         const allUsers = Array.from(userMap.values());
-        console.log(`[Sync] Merged total: ${allUsers.length} users.`);
+        console.log(`[Sync] Merged total result: ${allUsers.length} users.`);
 
         // 4. Update MongoDB
         for (const user of allUsers) {
