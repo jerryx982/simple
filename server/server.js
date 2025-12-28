@@ -9,9 +9,17 @@ const fs = require('fs');
 const authUtils = require('./utils/auth');
 const rateLimit = require('./utils/rateLimit');
 const databaseCollection = require('./database/index');
+const { syncUsers } = require('./scripts/sync');
 
 // Initialize DB
-databaseCollection();
+databaseCollection().then(() => {
+    // Start Sync Loop (e.g., every 30 seconds)
+    console.log("Starting Auto-Sync...");
+    syncUsers(); // Run once immediately
+    setInterval(() => {
+        syncUsers();
+    }, 30000); // 30 seconds
+});
 
 const DB_PATH = path.join(__dirname, 'db.json');
 
