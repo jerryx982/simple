@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const res = await API.post('/api/auth/signup', { name, email, password });
         if (res.ok) {
-            window.showToastAfterRedirect('Account created successfully!', 'success');
-            window.location.href = 'dashboard.html';
+            // Updated to use the animated loading screen
+            window.showLoadingAndRedirect('dashboard.html');
         } else {
             showError(res.error || 'Signup failed');
         }

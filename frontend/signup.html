@@ -4,13 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimpleCrypto | Sign Up</title>
+    <title>CHAIN VEST | Sign Up</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
+    <div class="snow-container">
+        <div class="snow layer1"></div>
+        <div class="snow layer2"></div>
+        <div class="snow layer3"></div>
+    </div>
     <header>
-        <a href="index.html" class="logo">SimpleCrypto</a>
+        <a href="index.html" class="logo"><img src="assets/logo-icon.png" alt="Logo"> <span>CHAIN VEST</span></a>
+        <button class="nav-toggle" aria-label="toggle navigation"><span class="hamburger"></span></button>
         <nav>
             <a href="signin.html">Sign In</a>
         </nav>
@@ -34,7 +40,15 @@
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" required>
+                    <span class="password-toggle-icon" title="Toggle Password Visibility">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                    </span>
+                </div>
                 <div class="progress-container">
                     <div class="progress-bar" id="strength-bar"
                         style="width: 0%; transition: width 0.3s, background-color 0.3s;"></div>
@@ -45,7 +59,15 @@
 
             <div class="form-group">
                 <label for="confirm-password">Confirm Password</label>
-                <input type="password" id="confirm-password" required>
+                <div class="password-wrapper">
+                    <input type="password" id="confirm-password" required>
+                    <span class="password-toggle-icon" title="Toggle Password Visibility">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                    </span>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-block">Sign Up</button>

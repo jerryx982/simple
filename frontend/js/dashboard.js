@@ -12,7 +12,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             await API.post('/api/auth/logout', {});
-            window.location.href = 'signin.html';
+
+            // Show alert concurrently
+            window.showModernAlert('You have successfully logged out.', 'Logout Successful', 'success');
+
+            // Use shared loading helper if available, else fallback
+            if (window.showLoadingAndRedirect) {
+                window.showLoadingAndRedirect('signin.html');
+            } else {
+                window.location.href = 'signin.html';
+            }
         });
     }
 

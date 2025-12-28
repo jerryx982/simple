@@ -70,6 +70,33 @@ async function redirectIfAuth() {
 
 // Navbar updater
 document.addEventListener('DOMContentLoaded', async () => {
+    // Mobile Nav Toggle
+    const navToggle = document.querySelector('.nav-toggle');
+    const nav = document.querySelector('header nav');
+    const body = document.body;
+
+    if (navToggle && nav) {
+        navToggle.addEventListener('click', () => {
+            nav.classList.toggle('active');
+            navToggle.classList.toggle('nav-open');
+            // Prevent scrolling when menu is open
+            if (nav.classList.contains('active')) {
+                body.style.overflow = 'hidden';
+            } else {
+                body.style.overflow = '';
+            }
+        });
+
+        // Close menu when clicking a link
+        nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                nav.classList.remove('active');
+                navToggle.classList.remove('nav-open');
+                body.style.overflow = '';
+            });
+        });
+    }
+
     // Add logic to update nav based on auth state if needed
     // Simple implementation: Pages have hardcoded navs or update via JS
 });
@@ -269,14 +296,13 @@ function initUserMenu() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            // Show toast first (non-blocking but we want user to see it)
-            // Actually, if we redirect immediately, they won't see it unless we delay.
-            // Let's await toast or delay.
-            window.showToast('Logging out...', 'info');
-            await new Promise(r => setTimeout(r, 1000)); // Small delay for UX
 
+            // Perform logout API call
             await API.post('/api/auth/logout', {});
-            window.location.href = 'signin.html';
+
+            window.showModernAlert('You have successfully logged out.', 'Logout Successful', 'success'); // Non-blocking
+            // Trigger 3s loading animation then redirect
+            window.showLoadingAndRedirect('signin.html');
         });
     }
 }
@@ -316,3 +342,91 @@ async function updateNotificationBadge() {
         console.error('Failed to update notification badge', e);
     }
 }
+
+// Loading Overlay Helper
+window.showLoadingAndRedirect = function (destinationUrl) {
+    // Check if overlay exists
+    let overlay = document.getElementById('loading-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.innerHTML = '<img src="assets/logo-icon.png" alt="Loading" class="loading-logo">';
+        document.body.appendChild(overlay);
+    }
+
+    // Activate
+    // Small delay to ensure DOM is ready and transition triggers
+    requestAnimationFrame(() => {
+        overlay.classList.add('active');
+    });
+
+    // Wait 3 seconds then redirect
+    setTimeout(() => {
+        window.location.href = destinationUrl;
+    }, 3000);
+};
+
+// Custom Modern Alert (Blocking)
+window.showModernAlert = function (message, title = 'Alert', type = 'success') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+
+        const iconSvg = type === 'success'
+            ? '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
+            : '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8 8 8z"/></svg>';
+
+        overlay.innerHTML = `
+            <div class="custom-alert-box">
+                <div class="custom-alert-icon ${type}">
+                    ${iconSvg}
+                </div>
+                <div class="custom-alert-title">${title}</div>
+                <div class="custom-alert-message">${message}</div>
+                <button class="custom-alert-btn">OK</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const btn = overlay.querySelector('.custom-alert-btn');
+        btn.focus();
+
+        btn.onclick = () => {
+            // Animate out
+            overlay.style.transition = 'opacity 0.2s';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.remove();
+                resolve();
+            }, 200);
+        };
+    });
+};
+
+// Password Toggle Logic
+function setupPasswordToggles() {
+    const icons = document.querySelectorAll('.password-toggle-icon');
+
+    icons.forEach(icon => {
+        icon.addEventListener('click', () => {
+            const input = icon.previousElementSibling;
+            if (input && input.tagName === 'INPUT') {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+
+                // Toggle Icon
+                if (type === 'text') {
+                    // Show "Hide" icon (Slash)
+                    icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>`;
+                } else {
+                    // Show "Show" icon (Eye)
+                    icon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+                }
+            }
+        });
+    });
+}
+
+// Init when DOM loads
+document.addEventListener('DOMContentLoaded', setupPasswordToggles);

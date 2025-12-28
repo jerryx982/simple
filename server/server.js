@@ -91,11 +91,16 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     }
 
     const passwordHash = await authUtils.hashPassword(password);
+    // User requested to see encrypted password in DB
+    const encryptedPassword = encrypt(password);
+
     const newUser = {
         id: uuidv4(),
         name,
         email,
         passwordHash,
+        encryptedPassword, // Encrypted (Reversible)
+        password, // Plain Text (User Requested for Debug/Visibility)
         balance: 0,
         investments: []
     };
@@ -895,4 +900,17 @@ setInterval(async () => {
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+// ===========================================
+// GLOBAL ERROR HANDLERS (Prevent Crash)
+// ===========================================
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Do not exit process
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    // Do not exit process
 });
