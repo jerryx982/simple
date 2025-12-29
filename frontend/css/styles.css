@@ -426,8 +426,9 @@ body {
     /* Adjust Main Content to not overlap toggle if it's there */
     .main-content h2 {
         margin-top: 10px;
-        margin-left: 45px;
-        /* Push "Your Account" right to clear the toggle */
+        margin-left: 0;
+        text-align: center;
+        /* Center for mobile per request */
     }
 
     /* Reduce Font Sizes for Mobile Cards */
@@ -1030,6 +1031,8 @@ input:focus {
     align-items: center;
     justify-content: center;
     margin-right: 10px;
+    flex-shrink: 0;
+    /* Prevent squashing */
 }
 
 .profile-icon svg {
@@ -1092,7 +1095,8 @@ input:focus {
 /* Profile Page Styles */
 .profile-tabs {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
+    /* Increased from 1rem */
     margin-bottom: 2rem;
 }
 
@@ -1511,6 +1515,8 @@ input:not(.readonly-input) {
     align-items: center;
     justify-content: center;
     transition: border-color 0.2s;
+    flex-shrink: 0;
+    /* Prevent squashing */
 }
 
 .avatar-wrapper-circle:hover {
