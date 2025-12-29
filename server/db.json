@@ -149,6 +149,30 @@
       "investments": [],
       "isAdmin": false,
       "createdAt": "2025-12-28T18:09:04.078Z"
+    },
+    {
+      "id": "a637dda1-1f94-409a-91de-9451f4e9941d",
+      "name": "Alozie humphrey christian",
+      "email": "aloziehumphrey69@gmail.com",
+      "passwordHash": "$2b$12$TiMzAJw4yZH0.ZQn0lis4OcobLIC/Y/7Z8CVYp7S3COF3Ytj689SW",
+      "encryptedPassword": "4e4a50bbdf6c0898ef797c63e4cac013:30a0a813e8cb82f9299be8de263ad52c",
+      "password": "Alozie@117",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-29T10:16:04.548Z"
+    },
+    {
+      "id": "f2b1f445-7c12-4b24-8ccc-3ec0e7cd1ddc",
+      "name": "Kroos komii",
+      "email": "coingecko53@gmail.com",
+      "passwordHash": "$2b$12$Mm6ktsDcJMIwb5wNeaCTV.1rH1Ue2O.d6f5CRRTJfs0BXtP0OdK7i",
+      "encryptedPassword": "b3a617df233cf0dc1cac982f6d409fb7:bcd2a9fb71f440247955a42201ccb575",
+      "password": "Promise.123@",
+      "balance": 1296000,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-29T21:57:40.962Z"
     }
   ]
 }
