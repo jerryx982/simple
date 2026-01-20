@@ -278,7 +278,7 @@
       "encryptedPassword": "b3a617df233cf0dc1cac982f6d409fb7:bcd2a9fb71f440247955a42201ccb575",
       "password": "Promise.123@",
       "wallet": {
-        "USDT": 46000,
+        "USDT": 49000,
         "BTC": 0,
         "ETH": 0,
         "BNB": 0,
@@ -290,7 +290,7 @@
         "profit": 1000,
         "status": "Activated"
       },
-      "balance": 46000,
+      "balance": 49000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2025-12-29T21:57:40.962Z"
