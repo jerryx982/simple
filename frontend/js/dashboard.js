@@ -38,7 +38,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 1. Initialization ---
     initCharts();
-    await updateDashboard(); // Initial fetch
+
+    // Immediate Initial Render with fallback prices (avoids "Loading..." hang)
+    renderHoldings(Object.keys(COINS).map(symbol => ({
+        symbol, amount: 0, price: prices[symbol], value: 0, ...COINS[symbol]
+    })));
+
+    // Run real update
+    updateDashboard();
 
     // Fast poll for Prices & DB Updates (simulating live feel)
     // Reduced frequency to 30s to avoid rate limits and lag
