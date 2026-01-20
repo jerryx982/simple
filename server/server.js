@@ -99,34 +99,46 @@ app.get('/api/price', async (req, res) => {
     }
 
     try {
-        // Fetch from CoinGecko with User-Agent to avoid 403/429
-        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coins}&vs_currencies=usd`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'application/json'
+        // Map CoinGecko IDs to CryptoCompare Tickers
+        const idMap = {
+            'bitcoin': 'BTC',
+            'ethereum': 'ETH',
+            'solana': 'SOL',
+            'binancecoin': 'BNB',
+            'tether': 'USDT'
+        };
+
+        const tickers = coins.split(',').map(id => idMap[id.trim()] || id.toUpperCase()).join(',');
+
+        // Fetch from CryptoCompare (More stable than CoinGecko Free)
+        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickers}&tsyms=USD`);
+
+        if (!response.ok) {
+            throw new Error(`Price API Error: ${response.status} ${response.statusText}`);
+        }
+
+        const rawData = await response.json();
+
+        // Reformat to match original CoinGecko structure { "bitcoin": { "usd": 0 } }
+        const formattedData = {};
+        Object.keys(idMap).forEach(id => {
+            const ticker = idMap[id];
+            if (rawData[ticker]) {
+                formattedData[id] = { usd: rawData[ticker].USD };
             }
         });
 
-        if (!response.ok) {
-            if (response.status === 429) {
-                console.warn(`CoinGecko Rate Limit (429). Using cache if available.`);
-            }
-            throw new Error(`CoinGecko API Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
         // Update Cache
         priceCache = {
-            data: data,
+            data: formattedData,
             lastUpdated: now,
             coins: coins
         };
 
-        res.json(data);
+        res.json(formattedData);
     } catch (error) {
         console.error('Crypto Price Fetch Error:', error.message);
-        // Serve expired cache if available as fallback, otherwise error
+        // Serve expired cache if available as fallback
         if (priceCache.data) {
             return res.json(priceCache.data);
         }
