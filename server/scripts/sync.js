@@ -21,6 +21,10 @@ const connectDB = async () => {
 
 const pushToGitHub = async () => {
     try {
+        console.log("[Git] Configuring local identity...");
+        execSync('git config user.email "autosync@chainvest.com"', { cwd: path.join(__dirname, '../../') });
+        execSync('git config user.name "AutoSync"', { cwd: path.join(__dirname, '../../') });
+
         console.log("[Git] Staging all changes...");
         execSync('git add .', { cwd: path.join(__dirname, '../../') });
 
