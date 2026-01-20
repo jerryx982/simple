@@ -22,7 +22,7 @@ function showNotification(message, type = 'info') {
             <span class="toast-message">${message}</span>
         </div>
         <button class="toast-close">&times;</button>
-        <div class="toast-progress" style="animation-duration: 3s;"></div>
+        <div class="toast-progress" style="animation-duration: 4s;"></div>
     `;
 
     // Close Button logic
@@ -35,7 +35,7 @@ function showNotification(message, type = 'info') {
     // Auto dismiss
     setTimeout(() => {
         hideToast(toast);
-    }, 3000);
+    }, 4000);
 }
 
 function hideToast(toast) {
@@ -46,274 +46,277 @@ function hideToast(toast) {
     });
 }
 
+// Config
+const COINS = {
+    'USDT': { name: 'Tether', network: ['TRC20', 'ERC20', 'BEP20'], img: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png' },
+    'BTC': { name: 'Bitcoin', network: ['BTC'], img: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
+    'ETH': { name: 'Ethereum', network: ['ERC20', 'BEP20'], img: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
+    'SOL': { name: 'Solana', network: ['Solana'], img: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+    'BNB': { name: 'BNB', network: ['BEP20 (BSC)'], img: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png' }
+};
+const FEES = {
+    'USDT': { 'TRC20': 1, 'ERC20': 10, 'BEP20': 0.5 },
+    'BTC': { 'BTC': 0.0005 },
+    'ETH': { 'ERC20': 0.005, 'BEP20': 0.0001 },
+    'SOL': { 'Solana': 0.01 },
+    'BNB': { 'BEP20 (BSC)': 0.0005 }
+};
+const MIN_LIMITS = { 'BTC': 0.001, 'ETH': 0.01, 'USDT': 10, 'SOL': 0.1, 'BNB': 0.01 };
+
+let balances = {};
+
 document.addEventListener('DOMContentLoaded', () => {
+    initCustomDropdown(); // Setup new UI
     fetchBalance();
-    fetchHistory();
+
+    // Auth Check
+    requireAuth().then(user => {
+        if (window.updateUserHeader) updateUserHeader(user);
+    });
+
     setupEventListeners();
 });
 
-let balances = {};
-const FEES = {
-    'BTC': { 'BTC': 0.0005 },
-    'ETH': { 'ERC20': 0.005, 'BEP20': 0.0001 },
-    'USDT': { 'ERC20': 10, 'TRC20': 1, 'BEP20': 0.5 }
-};
-const NETWORKS = {
-    'BTC': ['BTC'],
-    'ETH': ['ERC20', 'BEP20'],
-    'USDT': ['TRC20', 'ERC20', 'BEP20'] // TRC20 first as preferred
-};
-const MIN_LIMITS = { 'BTC': 0.001, 'ETH': 0.01, 'USDT': 10 };
+// --- 1. Custom Dropdown Logic ---
+function initCustomDropdown() {
+    const wrapper = document.querySelector('.custom-select-wrapper');
+    const trigger = document.querySelector('.custom-select-trigger');
+    const optionsContainer = document.querySelector('.custom-options');
+    const hiddenInput = document.getElementById('coin-select-value');
+
+    // Populate Options
+    Object.keys(COINS).forEach(symbol => {
+        const coin = COINS[symbol];
+        const option = document.createElement('div');
+        option.className = 'custom-option';
+        option.dataset.value = symbol;
+        option.innerHTML = `
+            <img src="${coin.img}" style="width:24px; height:24px; border-radius:50%;">
+            <span>${symbol}</span>
+            <span style="color:#666; font-size:0.8rem; margin-left:auto;">${coin.name}</span>
+        `;
+
+        option.addEventListener('click', () => {
+            // Update UI
+            document.getElementById('selected-coin-display').innerHTML = `
+                <img src="${coin.img}" style="width:24px; height:24px; border-radius:50%;">
+                <span>${symbol}</span>
+            `;
+            hiddenInput.value = symbol;
+            trigger.classList.remove('open');
+            wrapper.classList.remove('open');
+
+            // Trigger Change Logic
+            onCoinChange(symbol);
+        });
+
+        optionsContainer.appendChild(option);
+    });
+
+    trigger.addEventListener('click', () => {
+        wrapper.classList.toggle('open');
+    });
+
+    // Outside click close
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            wrapper.classList.remove('open');
+        }
+    });
+
+    // Default Select first
+    const firstCoin = 'USDT';
+    const firstOpt = optionsContainer.querySelector(`[data-value="${firstCoin}"]`);
+    if (firstOpt) firstOpt.click();
+}
+
+function onCoinChange(symbol) {
+    const networkSelect = document.getElementById('network-select');
+    networkSelect.innerHTML = ''; // Clear
+
+    // Populate Networks
+    const networks = COINS[symbol].network;
+    networks.forEach(net => {
+        const opt = document.createElement('option');
+        opt.value = net;
+        opt.textContent = net;
+        networkSelect.appendChild(opt);
+    });
+
+    updateBalanceDisplay(symbol);
+    validateAndCalc();
+}
+
+// --- 2. Input & Logic ---
 
 async function fetchBalance() {
     try {
         const res = await fetch('/api/user/balance');
         if (!res.ok) throw new Error('Failed to fetch balance');
         balances = await res.json();
-        updateBalanceDisplay();
+        const currentCoin = document.getElementById('coin-select-value').value;
+        if (currentCoin) updateBalanceDisplay(currentCoin);
     } catch (error) {
         console.error(error);
-        showNotification('Error loading balances. Please login.', 'error');
-        setTimeout(() => window.location.href = 'index.html', 2000);
     }
 }
 
-function updateBalanceDisplay() {
-    const coin = document.getElementById('coin-select').value;
+function updateBalanceDisplay(coin) {
     const balance = balances[coin] || 0;
-    document.getElementById('available-balance').textContent = `${balance} ${coin}`;
+    const availEl = document.getElementById('available-balance');
+    availEl.textContent = `${balance} ${coin}`;
 }
 
 function setupEventListeners() {
-    const coinSelect = document.getElementById('coin-select');
     const networkSelect = document.getElementById('network-select');
     const amountInput = document.getElementById('amount-input');
     const withdrawAllBtn = document.getElementById('withdraw-all');
     const submitBtn = document.getElementById('submit-btn');
-    const confirmBtn = document.getElementById('confirm-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
 
-    // Coin Change -> Update Networks & Balance
-    coinSelect.addEventListener('change', () => {
-        const coin = coinSelect.value;
-        networkSelect.innerHTML = ''; // Clear
-        NETWORKS[coin].forEach(net => {
-            const opt = document.createElement('option');
-            opt.value = net;
-            opt.textContent = net;
-            networkSelect.appendChild(opt);
-        });
-        updateBalanceDisplay();
-        validateAndCalc();
-    });
-
-    // Network/Amount Change -> Recalc
     networkSelect.addEventListener('change', validateAndCalc);
     amountInput.addEventListener('input', validateAndCalc);
 
-    // Withdraw All
-    withdrawAllBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent button default (optional)
-        const coin = coinSelect.value;
+    // MAX Button
+    withdrawAllBtn.addEventListener('click', () => {
+        const coin = document.getElementById('coin-select-value').value;
+        if (!coin) return;
         const balance = balances[coin] || 0;
         const network = networkSelect.value;
-        const fee = FEES[coin][network];
+        const fee = (FEES[coin] && FEES[coin][network]) ? FEES[coin][network] : 0;
 
-        // If we want to withdraw ALL, we set amount such that Amount + Fee = Balance
-        // Logic: Input + Fee <= Balance.
-        // So Input = Balance - Fee.
-        let maxAmount = balance - fee;
-        if (maxAmount < 0) maxAmount = 0;
+        let max = balance - fee;
+        if (max < 0) max = 0;
 
-        amountInput.value = maxAmount.toFixed(6); // precision
+        amountInput.value = max.toFixed(6);
         validateAndCalc();
     });
 
-    let twoFAEnabled = false;
+    // SUBMIT -> GATED LOGIC
+    submitBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // Stop form
 
-    // Check 2FA Status early
-    async function check2FAStatus() {
-        try {
-            const res = await fetch('/api/user/me'); // Assuming auth check passes
-            const user = await res.json();
-            if (user && user.twoFA && user.twoFA.enabled) {
-                twoFAEnabled = true;
-            }
-        } catch (e) { console.error("Auth check fail"); }
-    }
-    check2FAStatus();
+        if (submitBtn.classList.contains('disabled') || submitBtn.disabled) return;
 
-    // Submit -> Show Modal (Logic)
-    submitBtn.addEventListener('click', () => {
-        if (submitBtn.disabled) return;
-
-        // REFINEMENT: Check 2FA here
-        if (!twoFAEnabled) {
-            showNotification('2FA Security Required. Redirecting...', 'error');
-            setTimeout(() => window.location.href = 'security.html', 1500);
+        // Perform final soft check
+        const amount = parseFloat(amountInput.value);
+        if (!amount || amount <= 0) {
+            showNotification("Please enter a valid amount", "error");
             return;
         }
 
-        const coin = coinSelect.value;
-        const amount = amountInput.value;
-        const network = networkSelect.value;
-        const address = document.getElementById('address-input').value;
-        const fee = document.getElementById('fee-display').textContent;
-        const total = document.getElementById('total-deduct').textContent;
-
-        // Populate Modal
-        document.getElementById('confirm-coin').textContent = coin;
-        document.getElementById('confirm-network').textContent = network;
-        document.getElementById('confirm-address').textContent = address;
-        document.getElementById('confirm-amount').textContent = amount;
-        document.getElementById('confirm-fee').textContent = fee;
-        document.getElementById('confirm-total').textContent = total;
-
-        document.getElementById('confirmation-modal').style.display = 'flex';
-        // Focus OTP input
-        setTimeout(() => document.getElementById('withdraw-otp-input').focus(), 100);
+        // --- THE NEW LOGIC: BLOCK TRANSACTION ---
+        showBuyPinModal();
     });
-
-    // Modal Actions
-    cancelBtn.addEventListener('click', () => {
-        document.getElementById('confirmation-modal').style.display = 'none';
-    });
-
-    confirmBtn.addEventListener('click', async () => {
-        const coin = coinSelect.value;
-        const network = networkSelect.value;
-        const address = document.getElementById('address-input').value;
-        const amount = amountInput.value;
-        const otp = document.getElementById('withdraw-otp-input').value; // Get OTP
-
-        if (!otp) {
-            showNotification('Please enter 2FA Code', 'error');
-            return;
-        }
-
-        confirmBtn.textContent = 'Processing...';
-        confirmBtn.disabled = true;
-
-        try {
-            const res = await fetch('/api/withdraw', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ coin, network, address, amount, otp })
-            });
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                showNotification('Withdrawal Submitted Successfully!', 'success');
-                document.getElementById('confirmation-modal').style.display = 'none';
-                fetchBalance(); // Refresh balance
-                fetchHistory(); // Refresh history
-                amountInput.value = ''; // Reset
-                document.getElementById('withdraw-otp-input').value = ''; // Reset OTP
-            } else {
-                // Handle 2FA specific errors
-                if (res.status === 403 && data.redirect) {
-                    showNotification('2FA Security Required. Redirecting...', 'error');
-                    setTimeout(() => window.location.href = data.redirect, 2000);
-                    return;
-                }
-                showNotification(data.error || 'Withdrawal Failed', 'error');
-            }
-        } catch (err) {
-            showNotification('Network Error', 'error');
-        } finally {
-            confirmBtn.textContent = 'Confirm Withdrawal';
-            confirmBtn.disabled = false;
-        }
-    });
-
-    // Trigger initial population
-    coinSelect.dispatchEvent(new Event('change'));
 }
 
 function validateAndCalc() {
-    const coin = document.getElementById('coin-select').value;
+    const coin = document.getElementById('coin-select-value').value;
     const network = document.getElementById('network-select').value;
     const amountVal = parseFloat(document.getElementById('amount-input').value);
-    const address = document.getElementById('address-input').value; // Basic check
-    const errorMsg = document.getElementById('error-msg');
     const submitBtn = document.getElementById('submit-btn');
 
-    const fee = FEES[coin][network];
+    if (!coin || !network) return;
+
+    const fee = (FEES[coin] && FEES[coin][network]) ? FEES[coin][network] : 0;
     const balance = balances[coin] || 0;
-    const min = MIN_LIMITS[coin];
+    const min = MIN_LIMITS[coin] || 0;
 
     // Update Fee Display
     document.getElementById('fee-display').textContent = `${fee} ${coin}`;
 
-    // Validations
     let isValid = true;
     let error = '';
 
     if (!amountVal || isNaN(amountVal)) {
         isValid = false;
-        // Don't show error immediately on empty
     } else if (amountVal < min) {
         isValid = false;
-        error = `Minimum withdrawal amount is ${min} ${coin}`;
+        error = `Minimum withdrawal is ${min} ${coin}`;
     } else if ((amountVal + fee) > balance) {
         isValid = false;
-        error = `Insufficient balance. You need ${amountVal + fee} ${coin}`;
+        error = `Insufficient funds. Needed: ${(amountVal + fee).toFixed(6)}`;
     }
 
-    if (!address || address.length < 10) {
-        isValid = false;
-        // error = 'Invalid address'; // Maybe too aggressive to show while typing
-    }
-
-    // Update Net/Total
+    // Update Total Deduct
     if (!isNaN(amountVal)) {
-        document.getElementById('total-deduct').textContent = `${(amountVal + fee).toFixed(6)} ${coin}`; // DEBUG: Showing what leaves balance
+        document.getElementById('total-deduct').textContent = `${(amountVal + fee).toFixed(6)} ${coin}`;
     } else {
-        document.getElementById('total-deduct').textContent = `-`;
+        document.getElementById('total-deduct').textContent = `0.00`;
     }
 
-    if (error) {
-        errorMsg.textContent = error;
-        errorMsg.style.display = 'block';
-    } else {
-        errorMsg.style.display = 'none';
-    }
+    // Since we removed the explicit error msg div in the new HTML structure 
+    // we just toggle the button state or show a tooltip if needed.
+    // For now, simpler disable logic.
 
     submitBtn.disabled = !isValid;
-    if (!isValid) submitBtn.classList.add('disabled'); // fallback styling
+    if (!isValid) {
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
 }
 
-async function fetchHistory() {
-    try {
-        const res = await fetch('/api/withdraw/history');
-        const history = await res.json();
-        const container = document.getElementById('history-list');
-        container.innerHTML = '';
+// --- 3. Buy PIN Modal/Notification Logic ---
+function showBuyPinModal() {
+    // Create a custom modern modal on the fly or use sweetalert logic if available.
+    // Here we inject a high-z-index modal directly into body.
 
-        if (history.length === 0) {
-            container.innerHTML = '<div style="padding:1rem; text-align:center; color:#666;">No withdrawals found</div>';
-            return;
-        }
+    const existing = document.getElementById('pin-modal');
+    if (existing) existing.remove();
 
-        history.forEach(tx => {
-            const div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `
-                <div class="history-header">
-                    <span style="font-weight:bold;">${tx.coin} (${tx.network})</span>
-                    <span class="status ${tx.status}">${tx.status}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:0.25rem; font-size:0.8rem; color:#888;">
-                    <span>${new Date(tx.createdAt).toLocaleString()}</span>
-                    <span>${tx.amount} ${tx.coin}</span>
-                </div>
-                <div style="font-size:0.75rem; color:#666; margin-top:0.25rem;">
-                    Addr: ${tx.address.substring(0, 6)}...${tx.address.substring(tx.address.length - 4)}
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    } catch (err) {
-        console.error("History Error", err);
-    }
+    const modal = document.createElement('div');
+    modal.id = 'pin-modal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    `;
+
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1e1e2d 0%, #2a2a40 100%); 
+                    padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
+                    text-align: center; max-width: 400px; width: 90%; 
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5); relative;">
+            
+            <div style="margin-bottom: 1.5rem; color: #f7a600;">
+                <svg viewBox="0 0 24 24" style="width:60px; height:60px; fill:currentColor;">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+            
+            <h2 style="color: white; margin: 0 0 0.5rem 0;">Withdrawal Locked</h2>
+            <p style="color: #aaa; margin-bottom: 2rem; line-height: 1.5;">
+                A generic withdrawal restriction is active on this account. <br>
+                <strong>You must purchase a Withdrawal PIN to proceed.</strong>
+            </p>
+
+            <button id="close-pin-modal" style="
+                background: linear-gradient(90deg, #f7a600, #ff8c00);
+                border: none; padding: 0.8rem 2rem; border-radius: 2rem;
+                color: #000; font-weight: bold; cursor: pointer;
+                transition: transform 0.2s;
+            ">Buy Withdrawal PIN</button>
+
+            <button id="close-pin-secondary" style="
+                display: block; margin: 1rem auto 0; background: none; border: none;
+                color: #666; font-size: 0.9rem; cursor: pointer; text-decoration: underline;
+            ">Cancel</button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Event Listeners for the modal
+    const close = () => modal.remove();
+    const buyAction = () => {
+        // Here you would redirect to a support chat or payment page
+        window.location.href = "mailto:support@chainvest.com?subject=Buy Withdrawal PIN";
+        close();
+    };
+
+    modal.querySelector('#close-pin-secondary').addEventListener('click', close);
+    modal.querySelector('#close-pin-modal').addEventListener('click', buyAction);
 }

@@ -24,20 +24,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Render Plan Details
     const detailsDiv = document.getElementById('plan-details');
+    // Determine return display
+    const returnInfo = plan.returnAmount ? `$${plan.returnAmount}` : `${plan.roiPercent}%`;
+
     detailsDiv.innerHTML = `
-        <h3>${plan.title} Plan</h3>
+        <h3>${plan.title}</h3>
         <p>${plan.description}</p>
-        <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div>ROI: <strong style="color: var(--success);">${plan.roiPercent}%</strong></div>
-            <div>Term: <strong>${plan.termDays} Days</strong></div>
+        <div style="margin-top: 1rem; display: grid; grid-template-columns: 1fr; gap: 1rem;">
+            <div>Returns: <strong style="color: var(--success); font-size: 1.2rem;">${returnInfo}</strong></div>
         </div>
     `;
 
     const amountInput = document.getElementById('amount');
     const minDepositSpan = document.getElementById('min-deposit');
-    amountInput.value = plan.minDeposit;
-    amountInput.setAttribute('min', plan.minDeposit);
-    minDepositSpan.textContent = plan.minDeposit;
+
+    // Fixed Price Logic
+    const price = plan.price || plan.minDeposit || 0; // Fallback
+    amountInput.value = price;
+    amountInput.setAttribute('disabled', 'true'); // Fixed Price
+
+    if (minDepositSpan) {
+        minDepositSpan.parentElement.style.display = 'none'; // Hide min deposit hint
+    }
 
     // Wallet Logic
     const connectBtn = document.getElementById('connect-wallet');
@@ -55,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 userAddress = accounts[0];
                 connectBtn.style.display = 'none';
                 payBtn.style.display = 'block';
-                payBtn.textContent = `Pay ${amountInput.value} ETH`;
+                payBtn.textContent = `Pay ${price} USDT`;
             } catch (error) {
                 showError('User denied wallet connection');
             }
@@ -64,34 +72,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    amountInput.addEventListener('input', () => {
-        if (payBtn.style.display === 'block') {
-            payBtn.textContent = `Pay ${amountInput.value} ETH`;
-        }
-    });
+    // Removed input event listener since input is disabled
 
     payBtn.addEventListener('click', async () => {
         const amount = amountInput.value;
-        if (amount < plan.minDeposit) {
-            showError(`Minimum deposit is ${plan.minDeposit} ETH`);
-            return;
-        }
+        // No min deposit check needed for fixed price
 
         payBtn.disabled = true;
         payBtn.textContent = 'Processing...';
 
         try {
-            // Convert to Wei (Hex) - simplified. 
-            // In prod use ethers.js or web3.js for precise conversion.
-            // 1 ETH = 10^18 Wei. 0.01 ETH = 10^16 Wei.
-            const weiValue = '0x' + (parseFloat(amount) * 1e18).toString(16);
+            // Simulate USDT Transfer by sending 0 ETH to the demo address
+            // In a real app, this would be a contract interaction (ERC20 transfer)
+            const weiValue = '0x0';
 
             const txHash = await window.ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [
                     {
                         from: userAddress,
-                        to: '0x0000000000000000000000000000000000000000', // Burn address for demo / internal wallet
+                        to: '0x0000000000000000000000000000000000000000', // Burn address for demo
                         value: weiValue,
                         gas: '0x5208', // 21000 GWEI
                     },
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showError('Transaction failed: ' + error.message);
             showFallback(); // Show fallback to allow manual retry or instruction
             payBtn.disabled = false;
-            payBtn.textContent = `Pay ${amount} ETH`;
+            payBtn.textContent = `Pay ${amount} USDT`;
         }
     });
 
@@ -135,10 +135,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Manual Verify Button (Mock)
-    document.getElementById('verify-manual').addEventListener('click', async () => {
+    document.getElementById('verify-manual').addEventListener('click', async (e) => {
+        if (e) e.preventDefault(); // Prevent accidental form submit
+
         const amount = amountInput.value;
-        // Simulate a txHash for manual flow
-        await verifyPayment('0xMANUAL_' + Date.now(), amount);
+        const btn = document.getElementById('verify-manual');
+
+        // Disable to prevent double click
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+
+        console.log("Manual Verify Clicked"); // Debug
+
+        // 1. Show Modern Notification (Success Mock)
+        // message: "Your Account will be credited once the System verified your deposit"
+        // 1. Show Modern Notification (Success Mock)
+        if (window.showToast) {
+            window.showToast("Your Account will be credited once the System verified your deposit", "success", "Payment Submitted");
+        }
+
+        // 2. Call Backend (to record the intent)
+        try {
+            await API.post('/api/payment/verify', {
+                planId: plan.id,
+                amount,
+                txHash: 'MANUAL_' + Date.now()
+            });
+        } catch (err) {
+            console.error("Backend log failed", err);
+        }
+
+        // REMOVED REDIRECT to match deposit.js behavior
+        setTimeout(() => {
+            btn.textContent = 'Payment Sent';
+            btn.disabled = false;
+        }, 2000);
     });
 
     // Handle network switching if needed (optional)

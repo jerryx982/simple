@@ -15,10 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const res = await API.post('/api/auth/login', { email, password });
         if (res.ok) {
-            window.showModernAlert('You have successfully logged in.', 'Login Successful', 'success'); // Non-blocking
-            // window.showToastAfterRedirect('Sign in successful!', 'success');
-            // Using new loading animation instead of toast+redirect
-            window.showLoadingAndRedirect('dashboard.html');
+            // Success - Show loading screen immediately with message
+            window.showLoadingAndRedirect('dashboard.html', 'Login Successful');
         } else {
             errorMsg.textContent = res.error || 'Login failed';
             errorMsg.style.display = 'block';

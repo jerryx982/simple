@@ -27,9 +27,14 @@ const syncUsers = async () => {
 
         // 1. Read Local db.json
         if (fs.existsSync(DB_PATH)) {
-            const localData = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-            localUsers = localData.users || [];
-            console.log(`[Local] Found ${localUsers.length} users.`);
+            try {
+                const localData = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+                localUsers = localData.users || [];
+                console.log(`[Local] Found ${localUsers.length} users.`);
+            } catch (err) {
+                console.error("[Local] db.json is corrupted or invalid. Resetting to empty state.");
+                localUsers = [];
+            }
         } else {
             console.warn("[Local] db.json not found.");
         }

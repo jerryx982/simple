@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     passwordInput.addEventListener('input', () => {
         const val = passwordInput.value;
         let strength = 0;
-        if (val.length >= 10) strength++;
+        if (val.length >= 5) strength++;
         if (/[A-Z]/.test(val)) strength++;
         if (/[a-z]/.test(val)) strength++;
         if (/[0-9]/.test(val)) strength++;
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Strict validation
-        const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{10,})");
+        const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{5,})");
         if (!strongRegex.test(password)) {
             showError('Password does not meet requirements');
             return;

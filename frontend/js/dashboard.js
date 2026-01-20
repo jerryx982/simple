@@ -1,317 +1,369 @@
+// Dashboard 2.0 Logic - Granular Wallet & Premium Box
 document.addEventListener('DOMContentLoaded', async () => {
+    // Auth & Init
     const user = await requireAuth();
+    if (window.updateUserHeader) updateUserHeader(user);
 
-    updateUserHeader(user);
-    document.getElementById('balance-display').textContent = `$${user.balance.toFixed(2)}`;
+    // References
+    const portfolioTotalEl = document.getElementById('portfolio-total');
+    const portfolioChangeEl = document.getElementById('portfolio-change');
+    const holdingsListEl = document.getElementById('holdings-list');
+    const marketsListEl = document.getElementById('markets-list');
+    const premiumBoxContainer = document.getElementById('premium-box-container');
+    const pbPlanName = document.getElementById('pb-plan-name');
+    const pbTimer = document.getElementById('pb-timer');
+    const pbProfit = document.getElementById('pb-profit');
 
-    // User Menu Toggle handled by app.js
+    // Chart Instances
+    let portfolioChart = null;
+    let allocationChart = null;
+    let prices = {}; // Live prices cache
 
-    // Logout handler
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await API.post('/api/auth/logout', {});
+    // Coin Config
+    const COINS = {
+        'USDT': { id: 'tether', name: 'Tether', color: '#26A17B', img: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png' },
+        'BTC': { id: 'bitcoin', name: 'Bitcoin', color: '#F7931A', img: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
+        'ETH': { id: 'ethereum', name: 'Ethereum', color: '#627EEA', img: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
+        'SOL': { id: 'solana', name: 'Solana', color: '#14F195', img: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+        'BNB': { id: 'binancecoin', name: 'BNB', color: '#F3BA2F', img: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png' }
+    };
 
-            // Show alert concurrently
-            window.showModernAlert('You have successfully logged out.', 'Logout Successful', 'success');
+    // --- 1. Initialization ---
+    initCharts();
+    await updateDashboard(); // Initial fetch
 
-            // Use shared loading helper if available, else fallback
-            if (window.showLoadingAndRedirect) {
-                window.showLoadingAndRedirect('signin.html');
-            } else {
-                window.location.href = 'signin.html';
+    // --- 2. Live Polling ---
+    // Fast poll for Prices & DB Updates (simulating live feel)
+    setInterval(updateDashboard, 3000);
+
+    // --- 3. Core Logic ---
+    async function updateDashboard() {
+        try {
+            // A. Fetch User Data (Wallet & Box State)
+            const userData = await API.get('/api/user/me');
+            const wallet = userData.wallet || {};
+            const invBox = userData.investmentBox || {};
+
+            // B. Fetch Prices (if needed/stale)
+            // Note: In real app, maybe cache better. Here we call proxy.
+            try {
+                const priceData = await API.get('/api/price?coins=bitcoin,ethereum,solana,binancecoin,tether');
+                if (priceData) {
+                    // Update cache
+                    Object.keys(COINS).forEach(symbol => {
+                        const id = COINS[symbol].id;
+                        if (priceData[id]) prices[symbol] = priceData[id].usd;
+                    });
+                }
+            } catch (e) { console.warn("Price fetch failed, using cached", e); }
+
+            // Ensure we have some prices for calculation (fallback if all else fails)
+            if (!prices['USDT']) prices['USDT'] = 1;
+
+            // C. Calculate Total Balance
+            let totalBalance = 0;
+            let holdings = [];
+
+            Object.keys(COINS).forEach(symbol => {
+                const amount = wallet[symbol] || 0;
+                const price = prices[symbol] || 0;
+                const value = amount * price;
+                totalBalance += value;
+
+                holdings.push({ symbol, amount, price, value, ...COINS[symbol] });
+            });
+
+            // Update Header Display
+            portfolioTotalEl.textContent = `$${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            // Simulate lively ticker
+            portfolioChangeEl.innerHTML = `+${(12.5 + Math.random() * 0.5).toFixed(2)}%`;
+
+            // D. Render Assets List
+            renderHoldings(holdings);
+
+            // E. Render Markets List
+            renderMarkets();
+
+            // F. Update Charts
+            // Use live price for "Trading Chart" visual
+            updateAllocationChart(holdings, totalBalance);
+            updatePortfolioChart(prices['BTC'] || 0);
+
+            // G. Update Premium 3D Box
+            updatePremiumBox(invBox);
+
+        } catch (err) {
+            console.error("Dashboard Sync Error:", err);
+        }
+    }
+
+    function renderHoldings(holdings) {
+        // Sort by value desc
+        holdings.sort((a, b) => b.value - a.value);
+
+        holdingsListEl.innerHTML = holdings.map(h => `
+            <div class="holding-item">
+                <div class="coin-info">
+                    <img src="${h.img}" class="coin-icon">
+                    <div>
+                        <span class="coin-name">${h.symbol}</span>
+                        <span class="coin-sub">${h.name}</span>
+                    </div>
+                </div>
+                <div class="coin-balance">
+                    <span class="coin-val">${h.amount.toLocaleString()} ${h.symbol}</span>
+                    <span class="coin-sub">$${h.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div class="coin-change ${Math.random() > 0.3 ? 'positive' : 'negative'}">
+                    ${Math.random() > 0.3 ? '+' : ''}${(Math.random() * 5).toFixed(2)}%
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderMarkets() {
+        // Just render the supported coins with current prices
+        marketsListEl.innerHTML = Object.keys(COINS).map(sym => {
+            const coin = COINS[sym];
+            const price = prices[sym] || 0;
+            return `
+                <div class="market-row">
+                    <div class="coin-info">
+                        <img src="${coin.img}" style="width:28px; height:28px; border-radius:50%">
+                        <div>
+                            <div style="font-weight:600">${sym}</div>
+                            <div style="font-size:0.75rem; color: #8b949e">${coin.name}</div>
+                        </div>
+                    </div>
+                    <div style="font-weight:600">$${price.toLocaleString()}</div>
+                    <div class="positive">+${(Math.random() * 2 + 1).toFixed(2)}%</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updatePremiumBox(boxState) {
+        if (!boxState) {
+            premiumBoxContainer.style.display = 'none';
+            return;
+        }
+
+        premiumBoxContainer.style.display = 'flex';
+        pbPlanName.textContent = boxState.planName || 'Active Plan';
+
+        // Status Logic: Check string status directly
+        // 'Activated' vs 'Ended' (or anything else)
+        const status = boxState.status || 'Ended';
+        const isActive = status.toLowerCase() === 'activated';
+
+        pbTimer.textContent = status.toUpperCase();
+        pbTimer.style.color = isActive ? '#2aff8f' : '#ff4d4d'; // Green or Red
+        pbTimer.style.borderColor = isActive ? 'rgba(42, 255, 143, 0.3)' : 'rgba(255, 77, 77, 0.3)';
+
+        const profitVal = boxState.profit || 0;
+        pbProfit.textContent = `+$${profitVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    }
+
+    /* --- Chart Logic --- */
+    function initCharts() {
+        // Allocation Chart (Donut)
+        const ctxAlloc = document.getElementById('allocationChart').getContext('2d');
+        allocationChart = new Chart(ctxAlloc, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': $' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                animation: { duration: 500 }
+            }
+        });
+
+        // Portfolio Chart (Trading View Style)
+        const ctxPort = document.getElementById('portfolioChart').getContext('2d');
+
+        // Technical Gradient
+        const gradient = ctxPort.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(0, 229, 255, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 229, 255, 0)');
+
+        portfolioChart = new Chart(ctxPort, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''), // Placeholder time slots
+                datasets: [{
+                    label: 'BTC Price',
+                    data: Array(20).fill(null), // Start empty/null to show "zero" or waiting
+                    borderColor: '#00E5FF',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4, // Smooth curve
+                    pointRadius: 0, // Hide points for smoother look
+                    pointBackgroundColor: '#1e1e2d',
+                    pointBorderColor: '#00E5FF',
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#00E5FF',
+                    pointHoverBorderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false, // Show tooltip on hover anywhere near the x-axis index
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(20, 30, 48, 0.9)',
+                        titleColor: '#8b949e',
+                        bodyColor: '#00E5FF',
+                        bodyFont: { weight: 'bold', size: 14 },
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            title: () => 'Price Action', // Static title as requested or dynamic
+                            label: (context) => {
+                                const val = context.raw || 0;
+                                return `$${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true, // Show X-axis for "chart" feel
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: { display: false } // Hide labels if no real time data
+                    },
+                    y: {
+                        display: true, // Show Y-axis
+                        position: 'right', // typical for trading apps
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            borderDash: [5, 5],
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#555',
+                            font: { size: 10 },
+                            callback: function (value) {
+                                return '$' + (value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value);
+                            }
+                        }
+                    }
+                },
+                animation: { duration: 0 } // Instant updates for "live" feel
             }
         });
     }
 
-    // Render investments
-    const list = document.getElementById('investments-list');
-    if (user.investments.length === 0) {
-        list.innerHTML = '<p style="color: var(--text-secondary);">No active investments yet.</p>';
-        return;
+    function updateAllocationChart(holdings, total) {
+        if (!allocationChart) return;
+
+        // Pass 0 if total is 0 to clear chart or show empty state
+        if (total === 0) {
+            // Default Market Cap Distribution (Approx) for "Live" feel
+            const defaultLabels = ['BTC', 'ETH', 'BNB', 'SOL', 'USDT'];
+            const defaultData = [50, 25, 10, 10, 5];
+            const defaultColors = ['#F7931A', '#627EEA', '#F3BA2F', '#14F195', '#26A17B'];
+
+            allocationChart.data.labels = defaultLabels;
+            allocationChart.data.datasets[0].data = defaultData;
+            allocationChart.data.datasets[0].backgroundColor = defaultColors;
+            allocationChart.update();
+
+            document.getElementById('allocation-legend').innerHTML = `
+                <div style="text-align:center; font-size:0.8rem; color:#888; margin-bottom:0.5rem">(Market Distribution)</div>
+                ${defaultLabels.map((lbl, i) => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:#ccc;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:10px; height:10px; border-radius:50%; background:${defaultColors[i]}"></span>
+                        <span style="font-weight:600">${lbl}</span>
+                    </div>
+                    <div style="font-weight:600">${defaultData[i]}%</div>
+                </div>
+                `).join('')}
+            `;
+            return;
+        }
+
+        // Filter small dust
+        const significant = holdings.filter(h => h.value > 0);
+
+        const labels = significant.map(h => h.symbol);
+        const data = significant.map(h => h.value);
+        const colors = significant.map(h => h.color);
+
+        allocationChart.data.labels = labels;
+        allocationChart.data.datasets[0].data = data;
+        allocationChart.data.datasets[0].backgroundColor = colors;
+        allocationChart.update();
+
+        // Legend Update
+        const legendContainer = document.getElementById('allocation-legend');
+        legendContainer.innerHTML = significant.map(h => {
+            const pct = ((h.value / total) * 100).toFixed(1);
+            return `
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:#ccc;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:10px; height:10px; border-radius:50%; background:${h.color}"></span>
+                        <span style="font-weight:600">${h.symbol}</span>
+                    </div>
+                    <div style="font-weight:600">${pct}%</div>
+                </div>
+            `;
+        }).join('');
     }
 
-    list.innerHTML = '';
-    user.investments.forEach(inv => {
-        const startDate = new Date(inv.startDate);
-        const endDate = new Date(inv.endDate);
-        const now = new Date();
+    // Persist last value for smoothing
+    let lastChartValue = null;
 
-        const totalDuration = endDate - startDate;
-        const elapsed = now - startDate;
-        let progress = (elapsed / totalDuration) * 100;
-        if (progress > 100) progress = 100;
-        if (progress < 0) progress = 0;
+    function updatePortfolioChart(targetVal) {
+        if (!portfolioChart) return;
 
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.style.display = 'flex';
-        el.style.flexDirection = 'column';
-        el.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <h3 style="margin:0;">${inv.planTitle || 'Investment'}</h3>
-                <span style="color: ${inv.status === 'active' ? 'var(--success)' : 'var(--text-secondary)'}" 
-                      style="font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">
-                    ${inv.status}
-                </span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                <span>Invested: ${inv.amount} ETH</span>
-                <span>ROI: ${inv.roiPercent}%</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" style="width: ${progress}%"></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                <span>Start: ${startDate.toLocaleDateString()}</span>
-                <span>End: ${endDate.toLocaleDateString()}</span>
-            </div>
-        `;
-        list.appendChild(el);
-    });
+        // Initialize if first run
+        if (lastChartValue === null) lastChartValue = targetVal;
+
+        // Smoothing Logic: Move 5% towards target per tick + small Micro-movement
+        const step = (targetVal - lastChartValue) * 0.05;
+
+        // Add tiny consistent noise for "living" feel
+        const noise = (Math.random() - 0.5) * (targetVal * 0.001);
+
+        let nextVal = lastChartValue + step + noise;
+        lastChartValue = nextVal;
+
+        const data = portfolioChart.data.datasets[0].data;
+        data.shift();
+        data.push(nextVal);
+
+        portfolioChart.update('none');
+    }
 });
-
-
-// Charts and Ticker Logic
-const users = [
-    "Michael A.",
-    "Sarah K.",
-    "David O.",
-    "Blessing T.",
-    "John P.",
-    "Daniel M."
-];
-
-const amounts = [
-    "$120",
-    "$250",
-    "$500",
-    "$1,000",
-    "$2,300"
-];
-
-function randomWithdrawal() {
-    const user = users[Math.floor(Math.random() * users.length)];
-    const amount = amounts[Math.floor(Math.random() * amounts.length)];
-    return `${user} just withdrew ${amount}`;
-}
-
-const withdrawalItem = document.getElementById("withdrawal-item");
-
-function updateWithdrawal() {
-    if (!withdrawalItem) return;
-    withdrawalItem.textContent = randomWithdrawal();
-    withdrawalItem.style.animation = "none";
-    withdrawalItem.offsetHeight; // reset animation
-    withdrawalItem.style.animation = "slideUpDown 4s ease-in-out";
-}
-
-function initChart() {
-    const canvas = document.getElementById('portfolioChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    let animationFrameId;
-
-    // Handle resizing
-    const resizeCanvas = () => {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-    };
-    window.addEventListener('resize', resizeCanvas);
-    // Initial size
-    setTimeout(resizeCanvas, 0);
-
-    // Fake Data Generators
-    const generateData = (points, startVal) => {
-        let data = [];
-        let val = startVal;
-        for (let i = 0; i < points; i++) {
-            val = val + (Math.random() - 0.5) * 5;
-            if (val < 10) val = 10;
-            data.push(val);
-        }
-        return data;
-    };
-
-    let data = generateData(40, 100); // Initial data
-
-    // Live Update Loop
-    let lastTime = 0;
-    const animate = (timestamp) => {
-        if (timestamp - lastTime > 1000) { // Update every 1 second
-            // Shift data
-            const lastVal = data[data.length - 1];
-            let newVal = lastVal + (Math.random() - 0.5) * 5;
-            if (newVal < 10) newVal = 10;
-
-            data.shift();
-            data.push(newVal);
-            lastTime = timestamp;
-        }
-
-        drawChart();
-        animationFrameId = requestAnimationFrame(animate);
-    };
-
-    // Start animation
-    requestAnimationFrame(animate);
-
-    // Tooltip Element
-    const tooltip = document.createElement('div');
-    tooltip.className = 'chart-tooltip';
-    canvas.parentElement.appendChild(tooltip);
-
-    // Click Interaction
-    canvas.addEventListener('click', (e) => {
-        console.log('Chart clicked');
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-
-        const w = canvas.width;
-        const h = canvas.height;
-        const padding = { top: 20, right: 30, bottom: 30, left: 40 };
-
-        // 1. Recalculate Scale based on CURRENT data
-        if (data.length < 2) return;
-        const maxVal = Math.max(...data) + 5;
-        const minVal = Math.min(...data) - 5;
-        const range = maxVal - minVal;
-        const chartW = w - padding.left - padding.right;
-        const chartH = h - padding.top - padding.bottom;
-
-        // Define Local getY for accuracy
-        const getLocalY = (v) => padding.top + chartH - ((v - minVal) / range) * chartH;
-
-        // 2. Find Index
-        // i = ((x - padding.left) / chartW) * (len-1)
-        let i = Math.round(((x - padding.left) / chartW) * (data.length - 1));
-
-        // Bounds check
-        if (i < 0) i = 0;
-        if (i >= data.length) i = data.length - 1;
-
-        const val = data[i];
-        const prev = i > 0 ? data[i - 1] : val;
-        const change = prev !== 0 ? ((val - prev) / prev) * 100 : 0;
-        const isUp = change >= 0;
-
-        // 3. Position Tooltip
-        const pointX = padding.left + (i / (data.length - 1)) * chartW;
-        const pointY = getLocalY(val);
-
-        console.log(`Point: ${pointX}, ${pointY} | Val: ${val}`);
-
-        tooltip.style.left = `${pointX}px`;
-        tooltip.style.top = `${pointY - 45}px`; // Moved up a bit more to clear finger/cursor
-        tooltip.style.opacity = '1';
-
-        tooltip.innerHTML = `
-            <div style="font-weight:bold;">$${val.toFixed(2)}</div>
-            <div style="color:${isUp ? 'var(--success)' : 'var(--error)'}; font-size: 0.8rem;">
-                ${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%
-            </div>
-            <div style="color: var(--text-secondary); font-size: 0.7rem; margin-top:2px;">
-                ${i === data.length - 1 ? 'Now' : `-${data.length - i}s ago`}
-            </div>
-        `;
-
-        if (tooltip.timeout) clearTimeout(tooltip.timeout);
-        tooltip.timeout = setTimeout(() => {
-            tooltip.style.opacity = '0';
-        }, 3000);
-    });
-
-    function drawChart() {
-        const w = canvas.width;
-        const h = canvas.height;
-        const padding = { top: 20, right: 30, bottom: 30, left: 40 };
-
-        ctx.clearRect(0, 0, w, h);
-
-        if (data.length < 2) return;
-
-        const maxVal = Math.max(...data) + 5;
-        const minVal = Math.min(...data) - 5;
-        const range = maxVal - minVal;
-
-        const chartW = w - padding.left - padding.right;
-        const chartH = h - padding.top - padding.bottom;
-
-        const getX = (i) => padding.left + (i / (data.length - 1)) * chartW;
-        const getY = (val) => padding.top + chartH - ((val - minVal) / range) * chartH;
-
-        // Draw Y Axis Labels & Grid
-        ctx.fillStyle = '#8b949e';
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'right';
-        ctx.strokeStyle = '#30363d';
-        ctx.lineWidth = 0.5;
-
-        const ySteps = 5;
-        for (let i = 0; i <= ySteps; i++) {
-            const val = minVal + (range / ySteps) * i;
-            const y = getY(val);
-
-            // Grid line
-            ctx.beginPath();
-            ctx.moveTo(padding.left, y);
-            ctx.lineTo(w - padding.right, y);
-            ctx.stroke();
-
-            // Label
-            ctx.fillText('$' + Math.floor(val), padding.left - 5, y + 3);
-        }
-
-        // Draw X Axis Labels (just numbers/time proxy)
-        ctx.textAlign = 'center';
-        const xSteps = 5;
-        for (let i = 0; i <= xSteps; i++) {
-            const index = Math.floor((data.length - 1) * (i / xSteps));
-            const x = getX(index);
-
-            // Label (simulated time labels or just 1..N)
-            // Let's use simple index relative to now
-            const label = i === xSteps ? 'Now' : `-${data.length - index}s`;
-            ctx.fillText(label, x, h - 5);
-        }
-
-        // Draw Main Line
-        ctx.beginPath();
-        ctx.strokeStyle = '#58a6ff';
-        ctx.lineWidth = 2;
-        ctx.moveTo(getX(0), getY(data[0]));
-
-        for (let i = 1; i < data.length; i++) {
-            // Smooth bezier could be nice, but linear for now
-            ctx.lineTo(getX(i), getY(data[i]));
-        }
-        ctx.stroke();
-
-        // Gradient Fill
-        const gradient = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-        gradient.addColorStop(0, 'rgba(88, 166, 255, 0.2)');
-        gradient.addColorStop(1, 'rgba(88, 166, 255, 0)');
-
-        ctx.lineTo(getX(data.length - 1), h - padding.bottom);
-        ctx.lineTo(padding.left, h - padding.bottom);
-        ctx.closePath();
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
-        // Blinking Dot
-        const lastX = getX(data.length - 1);
-        const lastY = getY(data[data.length - 1]);
-
-        ctx.beginPath();
-        ctx.fillStyle = '#58a6ff';
-        ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-// Start everything
-updateWithdrawal();
-setInterval(updateWithdrawal, 4500);
-initChart();

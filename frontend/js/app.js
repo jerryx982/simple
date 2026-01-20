@@ -112,6 +112,44 @@ window.showToast = function (message, type = 'info', title = null) {
             document.body.appendChild(container);
         }
 
+        // --- SMART UPDATE (Prevents Glitching) ---
+        // Check if there is already an active toast
+        const existingToast = container.querySelector('.toast');
+
+        if (existingToast) {
+            // Update existing toast content instead of destroying it
+            const content = existingToast.querySelector('.toast-content');
+            if (content) {
+                content.querySelector('.toast-title').textContent = title || (type === 'success' ? 'Success' : 'Info');
+                content.querySelector('.toast-message').textContent = message;
+            }
+
+            // Update Type/Icon if needed
+            existingToast.className = `toast ${type}`;
+            // (Optional: update SVG icon if type changes - simplifying for stability)
+
+            // RESET ANIMATION (The "Glitch Fix")
+            // Removing animation property triggers a reflow, allowing it to restart smoothly
+            existingToast.style.animation = 'none';
+            existingToast.offsetHeight; /* trigger reflow */
+            existingToast.style.animation = 'slideIn 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)'; // Re-apply your custom animation
+
+            // RESET TIMER
+            // Clear previous auto-close timer attached to the element
+            if (existingToast.dismissTimer) clearTimeout(existingToast.dismissTimer);
+            existingToast.dismissTimer = setTimeout(() => {
+                existingToast.classList.add('hiding');
+                existingToast.addEventListener('animationend', () => {
+                    existingToast.remove();
+                    if (container.children.length === 0) container.remove();
+                }, { once: true });
+            }, 8000);
+
+            resolve();
+            return;
+        }
+
+        // --- NEW TOAST CREATION (If none exists) ---
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
 
@@ -159,19 +197,14 @@ window.showToast = function (message, type = 'info', title = null) {
 
         toast.querySelector('.toast-close').onclick = close;
 
-        // Auto dismiss
-        setTimeout(close, 5000);
+        // Auto dismiss - Attached to element for clearing later
+        toast.dismissTimer = setTimeout(close, 8000);
 
         container.appendChild(toast);
     });
 };
 
-// Backwards compatibility for showAlert (maps to toast)
-window.showAlert = async function (message) {
-    // If message implies error/success we could guess, but default to info/alert look
-    // Or we return the promise properly
-    return window.showToast(message, 'info');
-};
+// (Legacy Alert Removed)
 
 // Shared Sidebar Logic
 function initSidebar() {
@@ -300,9 +333,8 @@ function initUserMenu() {
             // Perform logout API call
             await API.post('/api/auth/logout', {});
 
-            window.showModernAlert('You have successfully logged out.', 'Logout Successful', 'success'); // Non-blocking
-            // Trigger 3s loading animation then redirect
-            window.showLoadingAndRedirect('signin.html');
+            // Show Cinematic Loading with Message
+            window.showLoadingAndRedirect('index.html', 'Logging Out...');
         });
     }
 }
@@ -344,18 +376,35 @@ async function updateNotificationBadge() {
 }
 
 // Loading Overlay Helper
-window.showLoadingAndRedirect = function (destinationUrl) {
+// Loading Overlay Helper - Cinematic
+window.showLoadingAndRedirect = function (destinationUrl, message = '') {
     // Check if overlay exists
     let overlay = document.getElementById('loading-overlay');
+
+    // Remove any interfering notifications
+    const toastContainer = document.querySelector('.toast-container');
+    if (toastContainer) toastContainer.remove();
+    const alertOverlay = document.querySelector('.custom-alert-overlay');
+    if (alertOverlay) alertOverlay.remove();
+
+    // Always recreate or update to ensure structure matches
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'loading-overlay';
-        overlay.innerHTML = '<img src="assets/logo-icon.png" alt="Loading" class="loading-logo">';
         document.body.appendChild(overlay);
     }
 
+    // Inject Cinematic Structure
+    overlay.innerHTML = `
+        <div class="loader-wrapper">
+            <div class="loader-ring"></div>
+            <div class="loader-ring inner"></div>
+            <img src="assets/logo-icon.png" alt="Loading" class="loading-logo">
+        </div>
+        ${message ? `<div class="loading-msg" style="position:absolute; bottom:20%; color:#fff; font-size:1.2rem; font-weight:600; text-shadow:0 0 10px rgba(0,229,255,0.5);">${message}</div>` : ''}
+    `;
+
     // Activate
-    // Small delay to ensure DOM is ready and transition triggers
     requestAnimationFrame(() => {
         overlay.classList.add('active');
     });
@@ -364,44 +413,6 @@ window.showLoadingAndRedirect = function (destinationUrl) {
     setTimeout(() => {
         window.location.href = destinationUrl;
     }, 3000);
-};
-
-// Custom Modern Alert (Blocking)
-window.showModernAlert = function (message, title = 'Alert', type = 'success') {
-    return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'custom-alert-overlay';
-
-        const iconSvg = type === 'success'
-            ? '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
-            : '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8 8 8z"/></svg>';
-
-        overlay.innerHTML = `
-            <div class="custom-alert-box">
-                <div class="custom-alert-icon ${type}">
-                    ${iconSvg}
-                </div>
-                <div class="custom-alert-title">${title}</div>
-                <div class="custom-alert-message">${message}</div>
-                <button class="custom-alert-btn">OK</button>
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-
-        const btn = overlay.querySelector('.custom-alert-btn');
-        btn.focus();
-
-        btn.onclick = () => {
-            // Animate out
-            overlay.style.transition = 'opacity 0.2s';
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.remove();
-                resolve();
-            }, 200);
-        };
-    });
 };
 
 // Password Toggle Logic

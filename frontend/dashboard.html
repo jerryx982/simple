@@ -14,9 +14,25 @@
         <div class="snow layer2"></div>
         <div class="snow layer3"></div>
     </div>
+
+    <!-- Header (Outside Container, matching profile.html) -->
     <header>
-        <a href="index.html" class="logo"><img src="assets/logo-icon.png" alt="Logo"> <span>CHAIN VEST</span></a>
+        <a href="index.html" class="logo">
+            <img src="assets/logo-icon.png" alt="Logo">
+            <span class="animate-gradient-text">CHAIN VEST</span>
+        </a>
         <div class="user-menu-container">
+            <!-- Notification Bell (Injected by app.js if missing, or we can hardcode it for safety) -->
+            <button id="notification-bell-btn" class="notification-bell-btn"
+                onclick="window.location.href='notifications.html'">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" />
+                </svg>
+                <div id="notification-badge" class="notification-badge"></div>
+            </button>
+
+            <!-- User Menu Button -->
             <button id="user-menu-btn" class="user-menu-btn">
                 <div class="profile-icon">
                     <svg viewBox="0 0 24 24">
@@ -29,6 +45,8 @@
                     <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
                 </svg>
             </button>
+
+            <!-- Dropdown -->
             <div id="user-dropdown" class="user-dropdown">
                 <a href="profile.html">
                     <svg viewBox="0 0 24 24">
@@ -59,7 +77,7 @@
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <a href="dashboard.html">
+            <a href="dashboard.html" class="active">
                 <svg viewBox="0 0 24 24">
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                 </svg>
@@ -106,60 +124,114 @@
             </a>
         </aside>
 
-        <!-- Toggle Button -->
-        <button id="sidebar-toggle" class="sidebar-toggle-btn">
-            <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;">
-                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-            </svg>
-        </button>
-
         <main class="main-content">
-            <section style="margin-bottom: 2rem;">
-                <h2>Your Account</h2>
+            <!-- Dashboard Title with Inline Toggle -->
+            <div style="display:flex; align-items:center; gap: 1rem; margin-bottom:2rem;">
+                <!-- Moved Toggle Button Here -->
+                <button id="sidebar-toggle" class="sidebar-toggle-btn">
+                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;">
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                    </svg>
+                </button>
+                <h1 style="font-size:1.8rem; margin:0;">Dashboard Overview</h1>
+            </div>
 
-                <div class="account-overview-grid">
-                    <!-- Balance Box -->
-                    <div class="card balance-card">
-                        <div style="font-size: 0.9rem; color: var(--text-secondary);">Available Balance (Simulated USD)
+            <!-- Main Grid -->
+            <div class="dashboard-grid">
+
+                <!-- 1. Portfolio Value (Big Curve Chart) -->
+                <div class="card portfolio-card span-2-col">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-label">Total Balance</div>
+                            <div class="card-value" id="portfolio-total">$0.00</div>
+                            <div class="card-sub">Past Month</div>
                         </div>
-                        <div id="balance-display"
-                            style="font-size: 2rem; font-weight: bold; color: var(--success); margin: 0.5rem 0;">$0.00
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">+2.4% this week</div>
+                        <div class="change-badge success" id="portfolio-change">+19.57%</div>
                     </div>
 
-                    <!-- Portfolio Chart -->
-                    <div class="card chart-card">
-                        <div class="chart-header">
-                            <h3>Portfolio Performance</h3>
-                            <div class="chart-controls">
-                                <button class="chart-btn active" data-period="D">D</button>
-                                <button class="chart-btn" data-period="W">W</button>
-                                <button class="chart-btn" data-period="M">M</button>
-                                <button class="chart-btn" data-period="YTD">YTD</button>
-                                <button class="chart-btn" data-period="ALL">ALL</button>
+                    <div class="chart-area-wrapper">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+
+                    <div class="chart-actions">
+                        <button class="time-btn">24H</button>
+                        <button class="time-btn">1W</button>
+                        <button class="time-btn active">1M</button>
+                        <button class="time-btn">1Y</button>
+                        <button class="time-btn">ALL</button>
+                    </div>
+                </div>
+
+                <!-- 2. Holdings (List) -->
+                <div class="card holdings-card">
+                    <div class="card-title">My Assets</div>
+                    <div class="holdings-list" id="holdings-list">
+                        <!-- Items injected by JS -->
+                        <div class="loading-spinner">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- 3. Markets (List) -->
+                <div class="card markets-card">
+                    <div class="card-title">Live Markets</div>
+                    <div class="markets-header">
+                        <span>Asset</span>
+                        <span>Price</span>
+                        <span>Change</span>
+                    </div>
+                    <div class="markets-list" id="markets-list">
+                        <!-- Items injected by JS -->
+                    </div>
+                </div>
+
+                <!-- 4. 3D Premium Live Investment Box (New) -->
+                <div class="card premium-box-card span-2-col" id="premium-box-container"
+                    style="display:none; overflow:hidden; position:relative;">
+                    <!-- 3D Content Injected JS -->
+                    <div class="premium-box-content">
+                        <div class="premium-badge">LIVE INVESTMENT</div>
+                        <h3 id="pb-plan-name">Free Starter</h3>
+                        <div class="pb-timer" id="pb-timer">00:45:12</div>
+                        <div class="pb-profit">
+                            <span class="label">Current Profit</span>
+                            <span class="value" id="pb-profit">+$12.50</span>
+                        </div>
+                        <div class="pb-visual">
+                            <!-- CSS 3D Cube or similar -->
+                            <div class="cube">
+                                <div class="face front"></div>
+                                <div class="face back"></div>
+                                <div class="face right"></div>
+                                <div class="face left"></div>
+                                <div class="face top"></div>
+                                <div class="face bottom"></div>
                             </div>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="portfolioChart"></canvas>
-                        </div>
                     </div>
                 </div>
-            </section>
 
-            <section>
-                <h3>Active Investments</h3>
-                <div id="investments-list" class="grid" style="grid-template-columns: 1fr;">
-                    <!-- Investments loaded via JS -->
+                <!-- 5. Allocation (Donut) -->
+                <div class="card allocation-card">
+                    <div class="card-title">Market Allocation</div>
+                    <div class="donut-wrapper">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                    <!-- Live Legend -->
+                    <div id="allocation-legend" class="allocation-legend"
+                        style="margin-top: 1rem; width: 100%; font-size: 0.85rem;"></div>
                 </div>
-            </section>
+
+            </div>
         </main>
     </div>
 
-    <div class="withdrawal-ticker">
+    <!-- Ticker invisible/minimized if needed -->
+    <div class="withdrawal-ticker" style="display:none;">
         <div id="withdrawal-item"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/app.js"></script>
     <script src="js/dashboard.js"></script>
 </body>

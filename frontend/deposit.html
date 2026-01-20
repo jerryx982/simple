@@ -8,7 +8,12 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body><div class="snow-container"><div class="snow layer1"></div><div class="snow layer2"></div><div class="snow layer3"></div></div>
+<body>
+    <div class="snow-container">
+        <div class="snow layer1"></div>
+        <div class="snow layer2"></div>
+        <div class="snow layer3"></div>
+    </div>
     <header>
         <a href="index.html" class="logo"><img src="assets/logo-icon.png" alt="Logo"> <span>CHAIN VEST</span></a>
         <div class="user-menu-container">
@@ -32,7 +37,7 @@
                     </svg>
                     Profile
                 </a>
-                <a href="#" onclick="showAlert('Settings Page Coming Soon')">
+                <a href="#" onclick="showToast('Settings Page Coming Soon', 'info')">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L6.16 7.96c-.11.2 0 .47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.11-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
@@ -66,7 +71,7 @@
                 </svg>
                 New Investment
             </a>
-            <a href="deposit.html">
+            <a href="deposit.html" class="active">
                 <svg viewBox="0 0 24 24">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
@@ -86,7 +91,7 @@
                 </svg>
                 Profile
             </a>
-            <button onclick="showAlert('Buy Withdrawal Pin')">
+            <button onclick="showToast('Buy Withdrawal Pin', 'info')">
                 <svg viewBox="0 0 24 24">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                 </svg>
@@ -102,67 +107,96 @@
         </button>
 
         <main class="main-content">
-            <div class="auth-form" style="max-width: 600px; margin: 2rem auto;">
-                <h2 style="margin-bottom: 2rem; text-align: center;">Make a Deposit</h2>
-
-                <div id="plan-details"
-                    style="margin-bottom: 2rem; padding: 1rem; background: var(--bg-color); border-radius: 8px;">
-                    <!-- Plan info inject -->
-                    Loading plan details...
+            <div class="deposit-container">
+                <div class="deposit-breadcrumb">
+                    <a href="dashboard.html">Assets</a> <span>/</span> <span
+                        style="color: var(--gate-text);">Deposit</span>
                 </div>
 
-                <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">
-                    Send the required amount to one of the addresses below. <br>
-                    For this demo, copying the address simulates readiness to pay.
-                </p>
+                <h2 style="margin-bottom: 2rem; color: var(--gate-text);">On-chain Deposit</h2>
 
-                <div class="card" style="margin-bottom: 1rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong>Ethereum (ETH)</strong>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">ERC-20</span>
+                <div class="deposit-grid">
+                    <!-- Left Column: Asset Selection -->
+                    <div class="deposit-card">
+                        <div class="deposit-section-title">Select Crypto</div>
+
+                        <!-- Coin Selector -->
+                        <div class="custom-select-group">
+                            <label class="custom-select-label">Coin</label>
+                            <div class="custom-select" id="coin-select">
+                                <div class="custom-select-trigger">
+                                    <span style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="coin-icon" style="background: #ccc;"></div> Select Coin
+                                    </span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--gate-subtext)">
+                                        <path d="M7 10l5 5 5-5z" />
+                                    </svg>
+                                </div>
+                                <div class="custom-options" id="coin-options">
+                                    <!-- Options injected via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Network Selector -->
+                        <div class="custom-select-group">
+                            <label class="custom-select-label">Network</label>
+                            <div class="custom-select" id="network-select">
+                                <div class="custom-select-trigger">
+                                    <span>Select Network</span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--gate-subtext)">
+                                        <path d="M7 10l5 5 5-5z" />
+                                    </svg>
+                                </div>
+                                <div class="custom-options" id="network-options">
+                                    <!-- Options injected via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Notices -->
+                        <div class="info-panel" id="network-notice" style="display: none;">
+                            <div class="info-item">
+                                <div class="info-dot"></div>
+                                <span>Average arrival time: 1 confirmation</span>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-dot"></div>
+                                <span>Minimum deposit: <span id="min-dep-amount">0.01</span> <span
+                                        id="dep-coin-ticker">ETH</span></span>
+                            </div>
+                        </div>
                     </div>
-                    <div
-                        style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 4px; word-break: break-all; margin-bottom: 0.5rem; font-family: monospace;">
-                        0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+
+                    <!-- Right Column: Address & QR -->
+                    <div class="deposit-card" id="deposit-details-panel" style="opacity: 0.5; pointer-events: none;">
+                        <div class="deposit-section-title">Deposit Address</div>
+
+                        <div class="qr-container">
+                            <img id="qr-img" src="assets/loading_bg.png" alt="QR Code">
+                        </div>
+
+                        <div class="custom-select-label" style="margin-bottom: 0.5rem;">Address</div>
+                        <div class="address-box">
+                            <input type="text" class="address-input" id="address-input" readonly
+                                value="Select coin & network first">
+                            <button class="copy-btn-inner" id="copy-btn">Copy</button>
+                        </div>
+
+                        <div class="info-panel"
+                            style="margin-top: 1.5rem; background: rgba(255, 77, 79, 0.05); border-color: rgba(255, 77, 79, 0.2);">
+                            <div class="info-item">
+                                <div class="info-dot" style="background: #ff4d4f;"></div>
+                                <span style="color: #ff4d4f;">Send only <strong id="warning-coin">selected coin</strong>
+                                    to this address. Sending any other asset may result in permanent loss.</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <button id="i-have-paid" class="btn btn-animated btn-block">I have made the payment</button>
+                        </div>
                     </div>
-                    <button class="btn btn-outline btn-block copy-btn"
-                        data-addr="0x71C7656EC7ab88b098defB751B7401B5f6d8976F">Copy Address</button>
                 </div>
-
-                <div class="card" style="margin-bottom: 1rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong>Bitcoin (BTC)</strong>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">BTC Network</span>
-                    </div>
-                    <div
-                        style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 4px; word-break: break-all; margin-bottom: 0.5rem; font-family: monospace;">
-                        bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
-                    </div>
-                    <button class="btn btn-outline btn-block copy-btn"
-                        data-addr="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh">Copy Address</button>
-                </div>
-
-                <div class="card" style="margin-bottom: 1rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong>USDT (Tether)</strong>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary);">TRC-20</span>
-                    </div>
-                    <div
-                        style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 4px; word-break: break-all; margin-bottom: 0.5rem; font-family: monospace;">
-                        T9yDXPXv45213hL123321312312312
-                    </div>
-                    <button class="btn btn-outline btn-block copy-btn" data-addr="T9yDXPXv45213hL123321312312312">Copy
-                        Address</button>
-                </div>
-
-                <div style="margin-top: 2rem; text-align: center;">
-                    <!-- Optional: A button to confirm payment if we want to reuse the verify logic -->
-                    <button id="i-have-paid" class="btn btn-block">I have made the payment</button>
-                </div>
-
             </div>
         </main>
     </div>
