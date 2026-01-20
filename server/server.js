@@ -131,6 +131,11 @@ app.get('/api/price', async (req, res) => {
     }
 });
 
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString(), cache: priceCache.lastUpdated });
+});
+
 // API: Auth - Signup
 app.post('/api/auth/signup', authLimiter, async (req, res) => {
     const { name, email, password } = req.body;
