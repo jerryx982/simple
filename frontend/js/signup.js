@@ -9,7 +9,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Password strength meter
     passwordInput.addEventListener('input', () => {
         const val = passwordInput.value;
+        const strengthText = document.getElementById('strength-text');
         let strength = 0;
+
+        if (val.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthText.textContent = 'Min 5 chars, uppercase, lowercase, number, symbol';
+            strengthText.style.color = 'var(--text-secondary)';
+            return;
+        }
+
         if (val.length >= 5) strength++;
         if (/[A-Z]/.test(val)) strength++;
         if (/[a-z]/.test(val)) strength++;
@@ -19,9 +28,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const width = (strength / 5) * 100;
         strengthBar.style.width = width + '%';
 
-        if (strength < 3) strengthBar.style.backgroundColor = 'var(--error)';
-        else if (strength < 5) strengthBar.style.backgroundColor = 'orange';
-        else strengthBar.style.backgroundColor = 'var(--success)';
+        if (strength < 3) {
+            strengthBar.style.backgroundColor = 'var(--error)';
+            strengthText.textContent = 'Strength: Weak';
+            strengthText.style.color = 'var(--error)';
+        } else if (strength < 5) {
+            strengthBar.style.backgroundColor = 'orange';
+            strengthText.textContent = 'Strength: Fair';
+            strengthText.style.color = 'orange';
+        } else {
+            strengthBar.style.backgroundColor = 'var(--success)';
+            strengthText.textContent = 'Strength: Strong';
+            strengthText.style.color = 'var(--success)';
+        }
     });
 
     form.addEventListener('submit', async (e) => {
