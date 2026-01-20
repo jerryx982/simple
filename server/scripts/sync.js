@@ -2,6 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const User = require('../models/User');
 
 const DB_PATH = path.join(__dirname, '../db.json');
@@ -15,6 +16,30 @@ const connectDB = async () => {
         console.error("MongoDB Connection Error:", error.message);
         // Do not exit process if running as module
         if (require.main === module) process.exit(1);
+    }
+};
+
+const pushToGitHub = async () => {
+    try {
+        console.log("[Git] Staging all changes...");
+        execSync('git add .', { cwd: path.join(__dirname, '../../') });
+
+        // Check if there are actual changes to commit
+        const status = execSync('git status --porcelain', { cwd: path.join(__dirname, '../../') }).toString();
+        if (!status) {
+            console.log("[Git] No changes detected. Skipping push.");
+            return;
+        }
+
+        console.log("[Git] Committing changes...");
+        execSync('git commit -m "Auto-sync update: project files" --author="AutoSync <autosync@chainvest.com>"', { cwd: path.join(__dirname, '../../') });
+
+        console.log("[Git] Pushing to GitHub...");
+        execSync('git push', { cwd: path.join(__dirname, '../../') });
+        console.log("[Git] Push successful!");
+    } catch (err) {
+        console.error("[Git] Auto-push failed:", err.message);
+        // We don't throw here to avoid stopping the sync loop
     }
 };
 
@@ -51,10 +76,11 @@ const syncUsers = async () => {
                 remoteUsers = remoteData.users || [];
                 console.log(`[Remote] Found ${remoteUsers.length} users.`);
             } else {
-                console.error(`[Remote] Failed to fetch: ${res.status} ${res.statusText}`);
+                // If 404, the file might not be pushed yet. This is expected initially.
+                console.log(`[Remote] Skip: GitHub file not found or inaccessible (Status: ${res.status}). Continuing with Local & Mongo. `);
             }
         } catch (fetchErr) {
-            console.error("[Remote] Network error fetching from GitHub:", fetchErr.message);
+            console.error("[Remote] Network error fetching from GitHub. Continuing with Local & Mongo.");
         }
 
         // 3. Merge Users
@@ -117,6 +143,9 @@ const syncUsers = async () => {
             currentDb.users = allUsers; // Update users list
             fs.writeFileSync(DB_PATH, JSON.stringify(currentDb, null, 2));
             console.log(`[Sync] Updated local db.json with ${allUsers.length} users.`);
+
+            // Auto-push changes to GitHub
+            await pushToGitHub();
         }
 
         console.log("[Sync] Cycle Complete.");

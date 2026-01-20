@@ -13,7 +13,6 @@ typings/
 !.env.example
 
 # Database
-server/db.json
 *.db
 *.sqlite
 

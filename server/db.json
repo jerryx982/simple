@@ -1,0 +1,301 @@
+{
+  "users": [
+    {
+      "username": "JerryX09",
+      "email": "jbklh@gmail.com",
+      "password": "$2b$10$W9wSuLwwFWgcPusQyrEu9efSNuts35.xeH2UOxjLdczbZQEWEajvq",
+      "role": "user",
+      "createdAt": "2025-11-02T14:09:11.628Z",
+      "updatedAt": "2025-11-02T14:09:11.628Z",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "id": "93902aae-77c1-43de-9429-ed5a5e7b045c",
+      "investments": [
+        {
+          "id": "59c61483-eb22-4a65-aed8-a0981f73ea95",
+          "planId": "free-starter",
+          "planTitle": "Free Starter ($2000)",
+          "amount": 2000,
+          "roiPercent": 10,
+          "startDate": "2025-12-19T05:49:32.307Z",
+          "endDate": "2025-12-19T06:49:32.289Z",
+          "status": "completed",
+          "isFree": true
+        },
+        {
+          "id": "4fa8ae5c-628c-43fb-bd96-d7caaa9d9130",
+          "planId": "free-starter",
+          "planTitle": "Free Starter ($2000)",
+          "amount": 2000,
+          "roiPercent": 10,
+          "startDate": "2025-12-19T07:27:02.731Z",
+          "endDate": "2025-12-19T08:27:02.642Z",
+          "status": "completed",
+          "isFree": true
+        },
+        {
+          "id": "f25c9850-089a-42c5-9b2f-6fa7cb34ced9",
+          "planId": "free-starter",
+          "planTitle": "Free Starter ($2000)",
+          "amount": 2000,
+          "roiPercent": 10,
+          "startDate": "2025-12-19T08:36:53.468Z",
+          "endDate": "2025-12-19T09:36:53.435Z",
+          "status": "completed",
+          "isFree": true
+        },
+        {
+          "id": "fe8d81c4-1d12-4762-be3a-ca7914350d2b",
+          "planId": "free-starter",
+          "planTitle": "Free Starter ($2000)",
+          "amount": 2000,
+          "roiPercent": 10,
+          "startDate": "2025-12-20T12:07:28.389Z",
+          "endDate": "2025-12-20T13:07:28.349Z",
+          "status": "completed",
+          "isFree": true
+        },
+        {
+          "id": "41d1a350-5fda-403b-8008-3382a5eb0fb8",
+          "planId": "free-starter",
+          "planTitle": "Free Starter ($2000)",
+          "amount": 2000,
+          "roiPercent": 10,
+          "startDate": "2025-12-20T13:25:50.946Z",
+          "endDate": "2025-12-20T14:25:50.807Z",
+          "status": "completed",
+          "isFree": true
+        }
+      ],
+      "isAdmin": false,
+      "name": "rita",
+      "passwordHash": "$2b$12$fG8v8h.sj5QxqO2mX3B7WO9g6ADZRU2vXBKvW03v/wWmtlpd3aDY2",
+      "twoFA": {
+        "tempSecret": "c386d46019d8ea225349d29c42f8d93e:663c8a51b75f63cd6f1041a7332882e624a1cbe522e920250f98aa9d803d02f3fd84d512703febfd9bbab99a81a68d80",
+        "enabled": false
+      }
+    },
+    {
+      "id": "1765686358902",
+      "name": "opobo",
+      "email": "nancydoris167@gmail.com",
+      "passwordHash": "$2b$12$umPVs.TzENj5z44aXydf0u4BB8zMj6wJaykFHxxmeGJ/dyldvR5jC",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "status": "Ended",
+        "planName": "Free Starter",
+        "profit": 0,
+        "active": false
+      },
+      "balance": 0,
+      "investments": [
+        {
+          "id": "1",
+          "investment": "starter",
+          "ROI": 10,
+          "progress": 20,
+          "endDate": "june 2000",
+          "End Date": [
+            "june"
+          ],
+          "amount": 10000,
+          "plan": "starter",
+          "status": "completed"
+        }
+      ],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T17:24:48.632Z"
+    },
+    {
+      "id": "94bd8178-74dd-4ba9-b617-4dfbac48f287",
+      "name": "Test User",
+      "email": "test1766003235160@example.com",
+      "passwordHash": "$2b$12$49oHS02rZx2wmgXbhljuhu3Q55h09eqvmEH2yYMoGvzZ.dhE9SUQu",
+      "wallet": {
+        "USDT": 2000,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T17:24:49.252Z"
+    },
+    {
+      "id": "179f6585-d976-45a6-849d-1af694d4d435",
+      "name": "TestUserEnc3",
+      "email": "testenc3@example.com",
+      "passwordHash": "$2b$12$Yb0u/dux5aZPENUQUsjGP.TO3CiBhaOIe9ArNF4EIbMxdtUuAVHoW",
+      "encryptedPassword": "934c838ff89a5e660205047aed98b367:a2954d96c5ee94e24264e8e52f7fd84f",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T17:24:49.543Z"
+    },
+    {
+      "id": "1c9fbd1f-49c1-48c7-90f4-69dc8925bd29",
+      "name": "maybe",
+      "email": "ghcg@gmail.com",
+      "passwordHash": "$2b$12$AIqrIxaGAQIO2eDGKPFzme/CdGjpWFbeq9FpHXy82cUAL6WTD8r7m",
+      "encryptedPassword": "eeb499a5fe56856b95a977755058a05f:b8b8c61b6a3f6ce358e0e3d5bcd551c4",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T17:24:49.893Z"
+    },
+    {
+      "id": "9883b16f-dc70-49ba-a5d2-67b338be29c7",
+      "name": "youij",
+      "email": "hjfv@gmail.com",
+      "passwordHash": "$2b$12$gn8TL7CM9Hox0GkggFZn5eZjfjKhDogDeCN1uNf6G3Xjv6vK.oRpe",
+      "encryptedPassword": "aa35581562ddfd364aabe479582ce71b:ffc34df84eda00199dfb04843a3a319e",
+      "password": "@Alwaysgood1",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T17:24:50.234Z"
+    },
+    {
+      "id": "bdac9b53-b02d-403b-a33f-9a9b6bcdf53e",
+      "name": "KALADA PEPPLE JANUARY ",
+      "email": "pepple12@gmail.com",
+      "passwordHash": "$2b$12$LPW9pf569B1ejKTDfYQBYu.JV7L6.XUjQT.91aSPsUsXPCIKeaJHe",
+      "encryptedPassword": "a22c74bf9507a9b41f7182ccacaf8e98:362997de5431100eb6abc4d373b2c800",
+      "password": "@Gooood1234",
+      "wallet": {
+        "USDT": 700,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": true,
+        "planName": "Starter plan",
+        "profit": 500,
+        "status": "Activated"
+      },
+      "balance": 700,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-28T18:09:04.078Z"
+    },
+    {
+      "id": "a637dda1-1f94-409a-91de-9451f4e9941d",
+      "name": "Alozie humphrey christian",
+      "email": "aloziehumphrey69@gmail.com",
+      "passwordHash": "$2b$12$TiMzAJw4yZH0.ZQn0lis4OcobLIC/Y/7Z8CVYp7S3COF3Ytj689SW",
+      "encryptedPassword": "4e4a50bbdf6c0898ef797c63e4cac013:30a0a813e8cb82f9299be8de263ad52c",
+      "password": "Alozie@117",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-29T10:16:04.548Z"
+    },
+    {
+      "id": "f2b1f445-7c12-4b24-8ccc-3ec0e7cd1ddc",
+      "name": "Kroos komii",
+      "email": "coingecko53@gmail.com",
+      "passwordHash": "$2b$12$Mm6ktsDcJMIwb5wNeaCTV.1rH1Ue2O.d6f5CRRTJfs0BXtP0OdK7i",
+      "encryptedPassword": "b3a617df233cf0dc1cac982f6d409fb7:bcd2a9fb71f440247955a42201ccb575",
+      "password": "Promise.123@",
+      "wallet": {
+        "USDT": 46000,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": true,
+        "planName": "Free Starter",
+        "profit": 1000,
+        "status": "Activated"
+      },
+      "balance": 46000,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2025-12-29T21:57:40.962Z"
+    }
+  ],
+  "investments": [],
+  "transactions": []
+}

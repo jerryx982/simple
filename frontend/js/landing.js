@@ -319,5 +319,5 @@ function updateCard(elementId, coinId, currentPrice) {
 
 // Init Data Loop
 fetchLivePrices();
-setInterval(fetchLivePrices, 10000); // Poll Backend every 10s
+setInterval(fetchLivePrices, 60000); // Poll Backend every 60s (Optimized)
 

@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCharts();
     await updateDashboard(); // Initial fetch
 
-    // --- 2. Live Polling ---
     // Fast poll for Prices & DB Updates (simulating live feel)
-    setInterval(updateDashboard, 3000);
+    // Reduced frequency to 30s to avoid rate limits and lag
+    setInterval(updateDashboard, 30000);
 
     // --- 3. Core Logic ---
     async function updateDashboard() {
