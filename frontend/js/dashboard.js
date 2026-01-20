@@ -17,7 +17,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Chart Instances
     let portfolioChart = null;
     let allocationChart = null;
-    let prices = {}; // Live prices cache
+
+    // Initial Fallback Prices (to prevent "Loading" hang)
+    let prices = {
+        'BTC': 90000,
+        'ETH': 3000,
+        'SOL': 120,
+        'BNB': 900,
+        'USDT': 1
+    }; // Live prices cache
 
     // Coin Config
     const COINS = {
