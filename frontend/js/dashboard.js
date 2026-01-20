@@ -43,8 +43,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderHoldings(Object.keys(COINS).map(symbol => ({
         symbol, amount: 0, price: prices[symbol], value: 0, ...COINS[symbol]
     })));
+    renderMarkets(); // Call immediately to show coins
 
-    // Run real update
+    // Run real update in background
     updateDashboard();
 
     // Fast poll for Prices & DB Updates (simulating live feel)
