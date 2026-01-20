@@ -139,8 +139,8 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'All fields are required' });
     }
-    // Password strength check (simplified for backend, frontend has logic too)
-    if (password.length < 10) {
+    // Password strength check
+    if (password.length < 5) {
         return res.status(400).json({ error: 'Password too short' });
     }
 
@@ -150,7 +150,6 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
     }
 
     const passwordHash = await authUtils.hashPassword(password);
-    // User requested to see encrypted password in DB
     const encryptedPassword = encrypt(password);
 
     const newUser = {
@@ -160,19 +159,23 @@ app.post('/api/auth/signup', authLimiter, async (req, res) => {
         passwordHash,
         encryptedPassword,
         password,
-        wallet: { // Granular Assets
+        wallet: {
             USDT: 0,
             BTC: 0,
             ETH: 0,
             BNB: 0,
             SOL: 0
         },
-        investmentBox: { // 3D Box State
-            status: 'Ended', // 'Activated' or 'Ended'
+        investmentBox: {
+            active: true,
             planName: 'Free Starter',
-            profit: 0
+            profit: 0,
+            status: 'Activated'
         },
-        investments: []
+        balance: 0,
+        investments: [],
+        isAdmin: false,
+        createdAt: new Date().toISOString()
     };
 
     db.users.push(newUser);
