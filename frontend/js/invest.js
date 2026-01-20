@@ -39,9 +39,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     const minDepositSpan = document.getElementById('min-deposit');
 
     // Fixed Price Logic
-    const price = plan.price || plan.minDeposit || 0; // Fallback
-    amountInput.value = price;
-    amountInput.setAttribute('disabled', 'true'); // Fixed Price
+    const basePrice = plan.price || plan.minDeposit || 0;
+    let currentPrice = basePrice;
+
+    amountInput.value = currentPrice;
+    amountInput.setAttribute('disabled', 'true');
+
+    // Live Price Update for Investment Page
+    async function updateLivePrice() {
+        try {
+            // Mapping plan to relevant coin for "Live" feel
+            const coinMap = { 'starter': 'BTC', 'growth': 'ETH', 'premium': 'SOL', 'longterm': 'BNB', 'titanium': 'BTC' };
+            const ticker = coinMap[plan.id] || 'BTC';
+            const priceData = await API.get(`/api/price?coins=${ticker.toLowerCase()}`);
+
+            if (priceData && (priceData[ticker.toLowerCase()] || priceData[ticker])) {
+                const livePrice = (priceData[ticker.toLowerCase()] || priceData[ticker]).usd;
+                // Add a small "Premium" or "Volatility" fluctuation to the base price for "Live" feel
+                const fluctuation = (Math.random() - 0.5) * (livePrice * 0.0001);
+                currentPrice = basePrice + fluctuation;
+                amountInput.value = currentPrice.toFixed(4);
+                if (payBtn.style.display !== 'none') {
+                    payBtn.textContent = `Pay ${currentPrice.toFixed(2)} USDT`;
+                }
+            }
+        } catch (e) {
+            console.warn("Live price update failed:", e);
+        }
+    }
+
+    // Poll every 15s to match dashboard
+    setInterval(updateLivePrice, 15000);
+    updateLivePrice(); // Run once immediately
 
     if (minDepositSpan) {
         minDepositSpan.parentElement.style.display = 'none'; // Hide min deposit hint

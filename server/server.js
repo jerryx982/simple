@@ -103,6 +103,9 @@ app.get('/api/price', async (req, res) => {
         const tickers = coins.split(',').map(id => idMap[id.trim()] || id.toUpperCase()).join(',');
 
         // Faster timeout for fetch to prevent site hang
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+
         const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickers}&tsyms=USD`, {
             signal: controller.signal,
             headers: { 'User-Agent': 'ChainVest-Server/1.0' }

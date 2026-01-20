@@ -1,48 +1,57 @@
-# SimpleCrypto
+# 🚀 CHAIN VEST - Premium Crypto Investment Platform
 
-A simple, realistic crypto-investment site built with Node.js, Express, and Vanilla JS/CSS.
+A high-performance, realistic cryptocurrency investment dashboard built with **Node.js**, **Express**, and a sleek **Vanilla JavaScript/CSS** frontend.
 
-## Features
+## ✨ Core Features
 
-- **Investment Plans**: View and subscribe to various investment tiers.
-- **Crypto Payments**: Simulate Ethereum payments via MetaMask.
-- **Authentication**: Secure Signup/Signin with bcrypt hashing and JWT cookies.
-- **Dashboard**: Track your balance and active investments.
+- **💎 Premium Dashboard**: Real-time asset tracking with live charts and dynamic market allocation.
+- **📈 Live Market Data**: Synchronized price feeds for BTC, ETH, SOL, BNB, and USDT using robust API proxies.
+- **🛡️ Secure Authentication**: JWT-based session management with encrypted password storage.
+- **🔗 Web3 Integration**: MetaMask-ready investment flow with simulated blockchain verification.
+- **📱 Mobile Ready**: Fully responsive design with optimized GPU-accelerated animations for a smooth experience on all devices.
+- **🔄 Automatic Sync**: Built-in GitHub synchronization to ensure production (Render) stays up-to-date with database changes.
 
-## Setup & Run
+## 🛠️ Tech Stack
 
-1. **Install Dependencies**
+- **Backend**: Node.js, Express.js
+- **Frontend**: HTML5, CSS3 (Custom Glassmorphism), Vanilla JavaScript
+- **Charts**: Chart.js
+- **Database**: File-based JSON Database (with Mongoose-like structure)
+- **Deployment**: Optimized for Render with Node 18+ support.
+
+## 🚀 Getting Started
+
+1. **Clone & Install**
 
     ```bash
     npm install
     ```
 
-2. **Configure Environment**
-    - Duplicate `.env.example` to a new file named `.env`.
-    - Update the values in `.env` with your configuration.
+2. **Environment Setup**
+    Create a `.env` file in the root directory:
 
-3. **Start Server**
-
-    ```bash
-    npm start
+    ```env
+    PORT=3000
+    DBUrl=YOUR_MONGODB_URI_HERE
     ```
 
-    Or for development with auto-restart:
+3. **Run Development Server**
 
     ```bash
     npm run dev
     ```
 
-4. **Access Frontend**
-    Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. **Production Mode**
 
-## File Structure
+    ```bash
+    npm start
+    ```
 
-- `server/`: Backend logic, auth, API, and database (JSON).
-- `frontend/`: HTML, CSS, JS for the user interface.
+## 📂 Project Structure
 
-## Notes
+- `server/`: API logic, authentication, and database helper.
+- `frontend/`: Responsive UI components, styles, and dashboard logic.
+- `scripts/`: Utility scripts for system synchronization and automation.
 
-- Database is stored in `server/db.json`.
-- Transactions are simulated (validated against backend mock).
-- Rate limiting is active on auth endpoints.
+---
+*Built with passion for the crypto community.*
