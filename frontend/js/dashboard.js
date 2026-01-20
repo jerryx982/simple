@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateDashboard();
 
     // Fast poll for Prices & DB Updates (simulating live feel)
-    // Reduced frequency to 30s to avoid rate limits and lag
-    setInterval(updateDashboard, 30000);
+    // Reduced frequency to 15s for sharp production "live" feel
+    setInterval(updateDashboard, 15000);
 
     // Live Chart Animation (Lively feel without hitting API)
     // Moves chart every 5s using simulated micro-fluctuations

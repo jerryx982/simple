@@ -5,6 +5,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const User = require('../models/User');
 
+const CACHE_DURATION = 15 * 1000; // 15 seconds (Optimized for production "live" feel)
 const DB_PATH = path.join(__dirname, '../db.json');
 
 const connectDB = async () => {
@@ -45,8 +46,16 @@ const pushToGitHub = async () => {
             env: gitEnv
         });
 
-        console.log("[Git] Pushing to GitHub...");
-        execSync('git push', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+        // Robust Push for Render/Production
+        console.log("[Git] Pushing to GitHub (origin main)...");
+        try {
+            // Try to set push destination explicitly if it fails
+            execSync('git push origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+        } catch (pushErr) {
+            console.warn("[Git] Standard push failed, attempting forced upstream...");
+            execSync('git push --set-upstream origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+        }
+
         console.log("[Git] Push successful!");
     } catch (err) {
         console.error("[Git] Auto-push failed:", err.message);

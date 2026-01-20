@@ -87,7 +87,7 @@ let priceCache = {
     lastUpdated: 0,
     coins: ''
 };
-const CACHE_DURATION = 60 * 1000; // 60 seconds (Reduced from 15s to avoid 429)
+const CACHE_DURATION = 15 * 1000; // 15 seconds (Optimized for production)
 
 app.get('/api/price', async (req, res) => {
     const coins = req.query.coins || 'bitcoin,ethereum,solana';
