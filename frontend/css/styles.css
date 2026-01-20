@@ -132,11 +132,22 @@
 
 @keyframes fall {
     0% {
-        background-position: 0 0;
+        transform: translateY(-10%);
     }
 
     100% {
-        background-position: 0 1000px;
+        transform: translateY(10%);
+    }
+}
+
+/* Mobile Lag Optimization: Reduce snow complexity on small screens */
+@media (max-width: 768px) {
+    .snow.layer3 {
+        display: none;
+    }
+
+    .snow.layer2 {
+        opacity: 0.3;
     }
 }
 
