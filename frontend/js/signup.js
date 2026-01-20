@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Strict validation
         const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{5,})");
         if (!strongRegex.test(password)) {
-            showError('Password does not meet requirements');
+            showError('Password must be at least 5 characters and include uppercase, lowercase, number, and symbol');
             return;
         }
 
