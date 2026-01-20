@@ -36,6 +36,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Reduced frequency to 30s to avoid rate limits and lag
     setInterval(updateDashboard, 30000);
 
+    // Live Chart Animation (Lively feel without hitting API)
+    // Moves chart every 5s using simulated micro-fluctuations
+    setInterval(() => {
+        if (prices['BTC']) updatePortfolioChart(prices['BTC']);
+    }, 5000);
+
     // --- 3. Core Logic ---
     async function updateDashboard() {
         try {
