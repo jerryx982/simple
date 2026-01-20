@@ -21,29 +21,35 @@ const connectDB = async () => {
 
 const pushToGitHub = async () => {
     try {
-        console.log("[Git] Configuring local identity...");
-        execSync('git config user.email "autosync@chainvest.com"', { cwd: path.join(__dirname, '../../') });
-        execSync('git config user.name "AutoSync"', { cwd: path.join(__dirname, '../../') });
+        const gitEnv = {
+            ...process.env,
+            GIT_AUTHOR_NAME: 'AutoSync',
+            GIT_AUTHOR_EMAIL: 'autosync@chainvest.com',
+            GIT_COMMITTER_NAME: 'AutoSync',
+            GIT_COMMITTER_EMAIL: 'autosync@chainvest.com'
+        };
 
         console.log("[Git] Staging all changes...");
-        execSync('git add .', { cwd: path.join(__dirname, '../../') });
+        execSync('git add .', { cwd: path.join(__dirname, '../../'), env: gitEnv });
 
         // Check if there are actual changes to commit
-        const status = execSync('git status --porcelain', { cwd: path.join(__dirname, '../../') }).toString();
+        const status = execSync('git status --porcelain', { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
         if (!status) {
             console.log("[Git] No changes detected. Skipping push.");
             return;
         }
 
         console.log("[Git] Committing changes...");
-        execSync('git commit -m "Auto-sync update: project files" --author="AutoSync <autosync@chainvest.com>"', { cwd: path.join(__dirname, '../../') });
+        execSync('git commit -m "Auto-sync update: project files"', {
+            cwd: path.join(__dirname, '../../'),
+            env: gitEnv
+        });
 
         console.log("[Git] Pushing to GitHub...");
-        execSync('git push', { cwd: path.join(__dirname, '../../') });
+        execSync('git push', { cwd: path.join(__dirname, '../../'), env: gitEnv });
         console.log("[Git] Push successful!");
     } catch (err) {
         console.error("[Git] Auto-push failed:", err.message);
-        // We don't throw here to avoid stopping the sync loop
     }
 };
 
