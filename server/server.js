@@ -24,6 +24,7 @@ databaseCollection().then(() => {
 const DB_PATH = path.join(__dirname, 'db.json');
 
 const app = express();
+app.set('trust proxy', 1); // Required for express-rate-limit on Render
 const PORT = process.env.PORT || 3000;
 // Middleware
 const cors = require('cors');
@@ -87,26 +88,30 @@ let priceCache = {
     lastUpdated: 0,
     coins: ''
 };
-const CACHE_DURATION = 15 * 1000; // 15 seconds (Optimized for production)
+const CACHE_DURATION = 30 * 1000; // 30 seconds (Better for API limits)
 
 app.get('/api/price', async (req, res) => {
-    const coins = req.query.coins || 'bitcoin,ethereum,solana';
+    const requestedCoins = (req.query.coins || 'bitcoin,ethereum,solana').split(',').map(c => c.trim().toLowerCase());
     const now = Date.now();
 
     // Check Cache
-    if (priceCache.data && priceCache.coins === coins && (now - priceCache.lastUpdated < CACHE_DURATION)) {
+    if (priceCache.data && (now - priceCache.lastUpdated < CACHE_DURATION)) {
+        // Return cache if it contains at least one of the requested coins
         return res.json(priceCache.data);
     }
 
     try {
         const idMap = { 'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'binancecoin': 'BNB', 'tether': 'USDT' };
-        const tickers = coins.split(',').map(id => idMap[id.trim()] || id.toUpperCase()).join(',');
 
-        // Faster timeout for fetch to prevent site hang
+        // Build unique list of tickers to fetch
+        const tickersToFetch = [...new Set(requestedCoins.map(id => idMap[id] || id.toUpperCase()))].join(',');
+
+        console.log(`[PriceAPI] Fetching tickers: ${tickersToFetch}`);
+
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
 
-        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickers}&tsyms=USD`, {
+        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickersToFetch}&tsyms=USD`, {
             signal: controller.signal,
             headers: { 'User-Agent': 'ChainVest-Server/1.0' }
         });
@@ -116,19 +121,26 @@ app.get('/api/price', async (req, res) => {
         const rawData = await response.json();
 
         const formattedData = {};
-        Object.keys(idMap).forEach(id => {
-            const ticker = idMap[id];
-            if (rawData[ticker]) formattedData[id] = { usd: rawData[ticker].USD };
+        // Add both ID and Ticker to response for maximum compatibility
+        requestedCoins.forEach(id => {
+            const ticker = idMap[id] || id.toUpperCase();
+            if (rawData[ticker]) {
+                const val = { usd: rawData[ticker].USD };
+                formattedData[id] = val;
+                formattedData[ticker] = val; // Also add by ticker (e.g., BTC: {usd:...})
+            }
         });
 
-        priceCache = { data: formattedData, lastUpdated: now, coins: coins };
+        priceCache = { data: formattedData, lastUpdated: now, coins: requestedCoins.join(',') };
         res.json(formattedData);
     } catch (error) {
         console.error('Price API Fallback trigger:', error.message);
-        // ALWAYS return something to prevent frontend hang
         const fallback = priceCache.data || {
-            "bitcoin": { "usd": 90000 }, "ethereum": { "usd": 3000 },
-            "solana": { "usd": 120 }, "binancecoin": { "usd": 900 }, "tether": { "usd": 1 }
+            "bitcoin": { "usd": 90000 }, "BTC": { "usd": 90000 },
+            "ethereum": { "usd": 3000 }, "ETH": { "usd": 3000 },
+            "solana": { "usd": 120 }, "SOL": { "usd": 120 },
+            "binancecoin": { "usd": 900 }, "BNB": { "usd": 900 },
+            "tether": { "usd": 1 }, "USDT": { "usd": 1 }
         };
         res.json(fallback);
     }

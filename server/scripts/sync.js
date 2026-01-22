@@ -49,11 +49,25 @@ const pushToGitHub = async () => {
         // Robust Push for Render/Production
         console.log("[Git] Pushing to GitHub (origin main)...");
         try {
-            // Try to set push destination explicitly if it fails
+            // Check if origin exists
+            const remotes = execSync('git remote', { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
+            if (!remotes.includes('origin')) {
+                console.warn("[Git] 'origin' remote not found. Checking for GITHUB_URL env...");
+                if (process.env.GITHUB_URL) {
+                    execSync(`git remote add origin ${process.env.GITHUB_URL}`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
+                } else {
+                    throw new Error("No 'origin' remote and GITHUB_URL not set.");
+                }
+            }
+
             execSync('git push origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
         } catch (pushErr) {
-            console.warn("[Git] Standard push failed, attempting forced upstream...");
-            execSync('git push --set-upstream origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+            console.warn("[Git] Standard push stalled/failed:", pushErr.message);
+            try {
+                execSync('git push --set-upstream origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+            } catch (innerErr) {
+                console.error("[Git] Absolute push failure. Please check Git remotes and permissions.");
+            }
         }
 
         console.log("[Git] Push successful!");

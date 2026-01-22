@@ -49,12 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function updateLivePrice() {
         try {
             // Mapping plan to relevant coin for "Live" feel
-            const coinMap = { 'starter': 'BTC', 'growth': 'ETH', 'premium': 'SOL', 'longterm': 'BNB', 'titanium': 'BTC' };
-            const ticker = coinMap[plan.id] || 'BTC';
-            const priceData = await API.get(`/api/price?coins=${ticker.toLowerCase()}`);
+            const coinMap = { 'starter': 'bitcoin', 'growth': 'ethereum', 'premium': 'solana', 'longterm': 'binancecoin', 'titanium': 'bitcoin' };
+            const coinId = coinMap[plan.id] || 'bitcoin';
+            const priceData = await API.get(`/api/price?coins=${coinId}`);
 
-            if (priceData && (priceData[ticker.toLowerCase()] || priceData[ticker])) {
-                const livePrice = (priceData[ticker.toLowerCase()] || priceData[ticker]).usd;
+            if (priceData && (priceData[coinId] || priceData[coinId.toUpperCase()])) {
+                const livePrice = (priceData[coinId] || priceData[coinId.toUpperCase()]).usd;
                 // Add a small "Premium" or "Volatility" fluctuation to the base price for "Live" feel
                 const fluctuation = (Math.random() - 0.5) * (livePrice * 0.0001);
                 currentPrice = basePrice + fluctuation;
