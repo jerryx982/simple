@@ -93,15 +93,21 @@ const CACHE_DURATION = 60 * 1000; // 60 seconds
 // 1. Binance (High Limits - Best for Server Side)
 async function fetchBinance(idMap) {
     try {
-        // Binance symbols: BTCUSDT, ETHUSDT, etc.
-        // We need to fetch individually or use a ticker endpoint? 
-        // /api/v3/ticker/price returns ALL prices if no symbol set, which is heavy but 1 call.
-        // Better: Fetch individually in parallel for the few we need.
+        // Filter out USDT (No USDTUSDT pair exists)
+        const activeSymbols = Object.values(idMap).filter(t => t !== 'USDT');
+        const symbols = activeSymbols.map(t => `${t}USDT`);
 
-        const symbols = Object.values(idMap).map(t => `${t}USDT`); // BTC -> BTCUSDT
         const promises = symbols.map(async sym => {
             try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${sym}`);
+                // Set short timeout for Binance to fail fast if geo-blocked
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
+
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${sym}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+
                 if (!res.ok) return null;
                 return res.json();
             } catch (e) { return null; }
@@ -112,18 +118,19 @@ async function fetchBinance(idMap) {
 
         results.forEach(r => {
             if (r && r.symbol && r.price) {
-                // Map back to ID
-                // symbol is BTCUSDT. Remove USDT.
                 const ticker = r.symbol.replace('USDT', '');
                 data[ticker] = parseFloat(r.price);
             }
         });
 
+        // Always set USDT to 1
+        data['USDT'] = 1.0;
+
         // Check if we got at least Bitcoin
-        if (!data['BTC']) throw new Error('Binance returned incomplete data');
+        if (!data['BTC']) throw new Error('Binance returned incomplete data (Possible Geo-Block)');
         return data;
     } catch (e) {
-        console.warn(`[PriceAPI] Binance failed: ${e.message}`);
+        console.warn(`[PriceAPI] Binance failed: ${e.message} -> Falling back...`);
         return null;
     }
 }
