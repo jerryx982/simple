@@ -82,64 +82,144 @@ app.get('/api/plans', (req, res) => {
     res.json(PLANS);
 });
 
-// --- Dynamic Crypto Price Proxy (CoinGecko) ---
+// --- Dynamic Crypto Price Proxy (Multi-API Redundancy) ---
 let priceCache = {
     data: null,
     lastUpdated: 0,
     coins: ''
 };
-const CACHE_DURATION = 30 * 1000; // 30 seconds (Better for API limits)
+const CACHE_DURATION = 60 * 1000; // 60 seconds (Reduced API load for Render)
+
+// Helper: Fetch from CoinGecko (Primary)
+async function fetchCoinGecko(ids) {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`, {
+            signal: controller.signal,
+            headers: { 'User-Agent': 'ChainVest-Server/2.0', 'Accept': 'application/json' }
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) throw new Error(`CG ${response.status}: ${response.statusText}`);
+        return await response.json();
+    } catch (error) {
+        console.warn(`[PriceAPI] CoinGecko failed: ${error.message}`);
+        return null;
+    }
+}
+
+// Helper: Fetch from CryptoCompare (Backup)
+async function fetchCryptoCompare(tickers) {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickers}&tsyms=USD`, {
+            signal: controller.signal,
+            headers: { 'User-Agent': 'ChainVest-Server/2.0' }
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) throw new Error(`CC ${response.status}`);
+        const data = await response.json();
+        if (data.Response === 'Error') throw new Error(`CC API: ${data.Message}`);
+
+        // Normalize to structure: { "id": { "usd": 123 } }
+        const normalized = {};
+        // Map Ticker -> ID requires reverse lookup or just returning tickers
+        // We will return ticker keys, main handler will map them
+        return data;
+    } catch (error) {
+        console.warn(`[PriceAPI] CryptoCompare failed: ${error.message}`);
+        return null;
+    }
+}
 
 app.get('/api/price', async (req, res) => {
     const requestedCoins = (req.query.coins || 'bitcoin,ethereum,solana').split(',').map(c => c.trim().toLowerCase());
     const now = Date.now();
 
-    // Check Cache
+    // 1. Serve Cache if valid
     if (priceCache.data && (now - priceCache.lastUpdated < CACHE_DURATION)) {
-        // Return cache if it contains at least one of the requested coins
         return res.json(priceCache.data);
     }
 
+    // IDs Map
+    const coinMap = {
+        'bitcoin': 'BTC',
+        'ethereum': 'ETH',
+        'solana': 'SOL',
+        'binancecoin': 'BNB',
+        'tether': 'USDT'
+    };
+
+    console.log(`[PriceAPI] Updating prices...`);
+
     try {
-        const idMap = { 'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL', 'binancecoin': 'BNB', 'tether': 'USDT' };
+        const ids = requestedCoins.join(',');
+        const tickers = [...new Set(requestedCoins.map(id => coinMap[id] || id.toUpperCase()))].join(',');
 
-        // Build unique list of tickers to fetch
-        const tickersToFetch = [...new Set(requestedCoins.map(id => idMap[id] || id.toUpperCase()))].join(',');
+        let rawData = {};
+        let source = 'None';
 
-        console.log(`[PriceAPI] Fetching tickers: ${tickersToFetch}`);
+        // A. Try CoinGecko First
+        const cgData = await fetchCoinGecko(ids);
+        if (cgData) {
+            rawData = cgData;
+            source = 'CoinGecko';
+        } else {
+            // B. Try CryptoCompare if CG fails
+            const ccData = await fetchCryptoCompare(tickers);
+            if (ccData) {
+                // Remap CC data (Ticker -> USD) to our format (ID -> usd)
+                requestedCoins.forEach(id => {
+                    const ticker = coinMap[id] || id.toUpperCase();
+                    if (ccData[ticker]) {
+                        rawData[id] = { usd: ccData[ticker].USD };
+                    }
+                });
+                source = 'CryptoCompare';
+            } else {
+                throw new Error("All APIs failed");
+            }
+        }
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
-
-        const response = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickersToFetch}&tsyms=USD`, {
-            signal: controller.signal,
-            headers: { 'User-Agent': 'ChainVest-Server/1.0' }
-        });
-        clearTimeout(timeout);
-
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        const rawData = await response.json();
-
+        // Validate & Format
         const formattedData = {};
-        // Add both ID and Ticker to response for maximum compatibility
         requestedCoins.forEach(id => {
-            const ticker = idMap[id] || id.toUpperCase();
-            if (rawData[ticker]) {
-                const val = { usd: rawData[ticker].USD };
-                formattedData[id] = val;
-                formattedData[ticker] = val; // Also add by ticker (e.g., BTC: {usd:...})
+            const ticker = coinMap[id] || id.toUpperCase();
+
+            // Extract value based on source structure
+            let val = null;
+            if (source === 'CoinGecko' && rawData[id]) val = rawData[id].usd;
+            else if (source === 'CryptoCompare' && rawData[id]) val = rawData[id].usd; // Already formatted above
+
+            if (val !== null) {
+                formattedData[id] = { usd: val };
+                formattedData[ticker] = { usd: val }; // Compat for ticker lookup
             }
         });
 
-        priceCache = { data: formattedData, lastUpdated: now, coins: requestedCoins.join(',') };
-        res.json(formattedData);
+        // Save Cache
+        if (Object.keys(formattedData).length > 0) {
+            priceCache = { data: formattedData, lastUpdated: now, coins: ids };
+            console.log(`[PriceAPI] Updated via ${source}`);
+            res.json(formattedData);
+        } else {
+            throw new Error("No data returned from APIs");
+        }
+
     } catch (error) {
-        console.error('Price API Fallback trigger:', error.message);
+        console.error('[PriceAPI] CRTICIAL FAILURE:', error.message);
+
+        // C. Last Resort: Stale Cache or Static Fallback
         const fallback = priceCache.data || {
-            "bitcoin": { "usd": 90000 }, "BTC": { "usd": 90000 },
-            "ethereum": { "usd": 3000 }, "ETH": { "usd": 3000 },
-            "solana": { "usd": 120 }, "SOL": { "usd": 120 },
-            "binancecoin": { "usd": 900 }, "BNB": { "usd": 900 },
+            "bitcoin": { "usd": 95000 }, "BTC": { "usd": 95000 },
+            "ethereum": { "usd": 3200 }, "ETH": { "usd": 3200 },
+            "solana": { "usd": 135 }, "SOL": { "usd": 135 },
+            "binancecoin": { "usd": 600 }, "BNB": { "usd": 600 },
             "tether": { "usd": 1 }, "USDT": { "usd": 1 }
         };
         res.json(fallback);
