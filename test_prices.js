@@ -1,5 +1,4 @@
-const fetch = require('node-fetch');
-
+// Native fetch is available in Node 18+
 async function testPriceAPI() {
     try {
         console.log("Testing /api/price...");
