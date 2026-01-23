@@ -228,7 +228,7 @@
       "encryptedPassword": "a22c74bf9507a9b41f7182ccacaf8e98:362997de5431100eb6abc4d373b2c800",
       "password": "@Gooood1234",
       "wallet": {
-        "USDT": 700,
+        "USDT": 18000,
         "BTC": 0,
         "ETH": 0,
         "BNB": 0,
@@ -240,7 +240,7 @@
         "profit": 500,
         "status": "Activated"
       },
-      "balance": 700,
+      "balance": 18000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2025-12-28T18:09:04.078Z"
@@ -328,7 +328,7 @@
       "encryptedPassword": "3ee20417cdbd8362782bdb9252764d9f:306ff4a0cb6d01cf76bf009b1c5d91b6",
       "password": "MonikaLusiak@2",
       "wallet": {
-        "USDT": 0,
+        "USDT": 20000,
         "BTC": 0,
         "ETH": 0,
         "BNB": 0,
@@ -340,7 +340,7 @@
         "profit": 0,
         "status": "Ended"
       },
-      "balance": 0,
+      "balance": 20000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-01-23T09:46:47.861Z"
