@@ -352,7 +352,20 @@
       "passwordHash": "$2b$12$dDrVUQ2lCgQrXFgNGeZq1ewKYNS68mYbVQqybdtIyUtb2nN/mukfG",
       "encryptedPassword": "504d3ce9cf43110e814f7034dc4069a8:2b46d261f70802e872546542b3284127",
       "password": "Te5e$",
-      "balance": 0,
+      "wallet": {
+        "USDT": 20000,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 20000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-01-23T22:43:18.445Z"
