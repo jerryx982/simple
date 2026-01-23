@@ -327,6 +327,19 @@
       "passwordHash": "$2b$12$o9CsuvPixomPSeqVjAvzeeTcinldwuPH/jezC6bL854xqq5VkTHTK",
       "encryptedPassword": "3ee20417cdbd8362782bdb9252764d9f:306ff4a0cb6d01cf76bf009b1c5d91b6",
       "password": "MonikaLusiak@2",
+      "wallet": {
+        "USDT": 0,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
       "balance": 0,
       "investments": [],
       "isAdmin": false,
