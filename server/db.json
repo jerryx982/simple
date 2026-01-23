@@ -319,6 +319,18 @@
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-01-20T15:25:20.040Z"
+    },
+    {
+      "id": "f51af109-2102-435d-a575-f7523ce41429",
+      "name": "Monika Łysiak ",
+      "email": "monikabosska@gmail.com",
+      "passwordHash": "$2b$12$o9CsuvPixomPSeqVjAvzeeTcinldwuPH/jezC6bL854xqq5VkTHTK",
+      "encryptedPassword": "3ee20417cdbd8362782bdb9252764d9f:306ff4a0cb6d01cf76bf009b1c5d91b6",
+      "password": "MonikaLusiak@2",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2026-01-23T09:46:47.861Z"
     }
   ],
   "investments": [],
