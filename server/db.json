@@ -369,6 +369,18 @@
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-01-23T22:43:18.445Z"
+    },
+    {
+      "id": "5a200b1b-42a4-442d-b5eb-7f56f6cd49cd",
+      "name": "Lokossou samson",
+      "email": "snowzyasap@gmail.com",
+      "passwordHash": "$2b$12$y2qadPycdtno.YCAEwzaneNYd0eKPm7OuWQ0OKxE07g5yFCpgK6em",
+      "encryptedPassword": "21287d8e271189c5fbb46510b2ea5fbc:c45572fb044434fb359a6075cc7760ea",
+      "password": "@Snowzy9902",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2026-01-25T14:01:28.783Z"
     }
   ],
   "investments": [],
