@@ -11,7 +11,7 @@ const DB_PATH = path.join(__dirname, '../db.json');
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) return; // Already connected
     try {
-        await mongoose.connect(process.env.DBUrl);
+        await mongoose.connect(process.env.DBUrl, { serverSelectionTimeoutMS: 5000 });
         console.log("Database connected successfully!");
     } catch (error) {
         console.error("MongoDB Connection Error:", error.message);
@@ -129,6 +129,7 @@ const syncUsers = async () => {
         // B. Add MongoDB users (Render/Hosted Data - Middle Layer)
         // This pulls new accounts created on the live site
         try {
+            if (mongoose.connection.readyState !== 1) throw new Error("MongoDB not connected");
             const mongoUsers = await User.find({}).lean();
             console.log(`   [Merge] Applying ${mongoUsers.length} MongoDB users (Middle)...`);
 
@@ -154,20 +155,24 @@ const syncUsers = async () => {
         console.log(`[Sync] Merged total result: ${allUsers.length} users.`);
 
         // 4. Update MongoDB
-        for (const user of allUsers) {
-            // Check if user exists in Mongo by ID or Email
-            const existingUser = await User.findOne({ $or: [{ id: user.id }, { email: user.email }] });
+        if (mongoose.connection.readyState === 1) {
+            for (const user of allUsers) {
+                // Check if user exists in Mongo by ID or Email
+                const existingUser = await User.findOne({ $or: [{ id: user.id }, { email: user.email }] });
 
-            if (existingUser) {
-                // Update existing
-                Object.assign(existingUser, user);
-                await existingUser.save();
-            } else {
-                // Create new
-                const newUser = new User(user);
-                await newUser.save();
-                console.log(`[Sync] Created new MongoDB user: ${user.email}`);
+                if (existingUser) {
+                    // Update existing
+                    Object.assign(existingUser, user);
+                    await existingUser.save();
+                } else {
+                    // Create new
+                    const newUser = new User(user);
+                    await newUser.save();
+                    console.log(`[Sync] Created new MongoDB user: ${user.email}`);
+                }
             }
+        } else {
+            console.warn("[Sync] Skipping MongoDB update as database is not connected.");
         }
 
         // 5. Write back to unique local db.json (Two-way sync)
