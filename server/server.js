@@ -1243,7 +1243,7 @@ app.get('/api/withdraw/history', authenticate, async (req, res) => {
 setInterval(async () => {
     try {
         if (require('mongoose').connection.readyState !== 1) return;
-        
+
         const pendingWithdrawals = await Withdrawal.find({ status: 'pending' });
         const now = Date.now();
         const TWO_MINUTES = 2 * 60 * 1000;

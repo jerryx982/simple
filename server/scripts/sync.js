@@ -76,7 +76,15 @@ const pushToGitHub = async () => {
     }
 };
 
+let isSyncing = false;
+
 const syncUsers = async () => {
+    if (isSyncing) {
+        console.log("[Sync] Sync already in progress, skipping this cycle.");
+        return;
+    }
+    isSyncing = true;
+    
     await connectDB();
 
     try {
@@ -196,6 +204,7 @@ const syncUsers = async () => {
         if (require.main === module) {
             mongoose.connection.close();
         }
+        isSyncing = false;
     }
 };
 
