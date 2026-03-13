@@ -30,18 +30,22 @@ const pushToGitHub = async () => {
             GIT_COMMITTER_EMAIL: 'autosync@chainvest.com'
         };
 
+        const gitCmd = process.platform === 'win32' && fs.existsSync('C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe')
+            ? '"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe"'
+            : 'git';
+
         console.log("[Git] Staging all changes...");
-        execSync('git add .', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+        execSync(`${gitCmd} add .`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
 
         // Check if there are actual changes to commit
-        const status = execSync('git status --porcelain', { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
+        const status = execSync(`${gitCmd} status --porcelain`, { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
         if (!status) {
             console.log("[Git] No changes detected. Skipping push.");
             return;
         }
 
         console.log("[Git] Committing changes...");
-        execSync('git commit -m "Auto-sync update: project files"', {
+        execSync(`${gitCmd} commit -m "Auto-sync update: project files"`, {
             cwd: path.join(__dirname, '../../'),
             env: gitEnv
         });
@@ -50,21 +54,21 @@ const pushToGitHub = async () => {
         console.log("[Git] Pushing to GitHub (origin main)...");
         try {
             // Check if origin exists
-            const remotes = execSync('git remote', { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
+            const remotes = execSync(`${gitCmd} remote`, { cwd: path.join(__dirname, '../../'), env: gitEnv }).toString();
             if (!remotes.includes('origin')) {
                 console.warn("[Git] 'origin' remote not found. Checking for GITHUB_URL env...");
                 if (process.env.GITHUB_URL) {
-                    execSync(`git remote add origin ${process.env.GITHUB_URL}`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
+                    execSync(`${gitCmd} remote add origin ${process.env.GITHUB_URL}`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
                 } else {
                     throw new Error("No 'origin' remote and GITHUB_URL not set.");
                 }
             }
 
-            execSync('git push origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+            execSync(`${gitCmd} push origin main`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
         } catch (pushErr) {
             console.warn("[Git] Standard push stalled/failed:", pushErr.message);
             try {
-                execSync('git push --set-upstream origin main', { cwd: path.join(__dirname, '../../'), env: gitEnv });
+                execSync(`${gitCmd} push --set-upstream origin main`, { cwd: path.join(__dirname, '../../'), env: gitEnv });
             } catch (innerErr) {
                 console.error("[Git] Absolute push failure. Please check Git remotes and permissions.");
             }
