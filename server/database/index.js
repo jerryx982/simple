@@ -4,7 +4,7 @@ dotenv.config();
 
 const databaseCollection = async () => {
     try {
-        await mongoose.connect(process.env.DBUrl);
+        await mongoose.connect(process.env.DBUrl, { serverSelectionTimeoutMS: 5000 });
         console.log("Database connected successfully!");
     } catch (error) {
         console.error("MongoDB Connection Error (Non-fatal):", error.message);
