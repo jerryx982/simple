@@ -228,7 +228,7 @@
       "encryptedPassword": "a22c74bf9507a9b41f7182ccacaf8e98:362997de5431100eb6abc4d373b2c800",
       "password": "@Gooood1234",
       "wallet": {
-        "USDT": 199000,
+        "USDT": 267000,
         "BTC": 0,
         "ETH": 0,
         "BNB": 0,
@@ -240,7 +240,7 @@
         "profit": 500,
         "status": "Activated"
       },
-      "balance": 199000,
+      "balance": 267000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2025-12-28T18:09:04.078Z"
