@@ -381,6 +381,30 @@
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-01-25T14:01:28.783Z"
+    },
+    {
+      "id": "a267c1a0-864a-47ad-80c0-d13d3a925663",
+      "name": "Ogolo prince boma ",
+      "email": "princeboma15@gmail.com",
+      "passwordHash": "$2b$12$s8rew5HrEyj4IyjSFBpZPuBZG/U7mNnWMRew5k4LUK23KXK5g7F8C",
+      "encryptedPassword": "c193c16ec5544372d700b88b8a389ae7:b3fbb83dfe8febaee43b772b9f1dc00b2dc4e29bb745ec86979026ed955939c6",
+      "password": "08183040637@Gmail.com",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2026-02-04T23:54:20.597Z"
+    },
+    {
+      "id": "cb477f8e-9592-4883-8953-be68201d6844",
+      "name": "Raphael Joseph tesunbe ",
+      "email": "raphealjoseph57@gmail.com",
+      "passwordHash": "$2b$12$P4jrZU5QgsIAzKrjlGcuPuCiPzQqA.PcuoFbCOUrbHRolZ2z/3wsC",
+      "encryptedPassword": "c5f1977aebca41f35074689da0ed42b4:1fa22557fc82374f227dae92c3d95ffc",
+      "password": "Rap12345#",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2026-02-10T14:11:22.525Z"
     }
   ],
   "investments": [],
