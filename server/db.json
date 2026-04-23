@@ -405,6 +405,18 @@
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-02-10T14:11:22.525Z"
+    },
+    {
+      "id": "c92ea049-42fe-48b2-b139-f9a624c827b9",
+      "name": "Uche valentine Ansa ",
+      "email": "Uchevalentine1993@gmail.com",
+      "passwordHash": "$2b$12$8XGe7VLD4Ynb5WuJOWD5cuE7SbzXIwg.IoCH4jPovXBAVyxYXmNUm",
+      "encryptedPassword": "4430bcf24d8093fa3ad4ef6cf33fb57c:8d597a9b864dc4be407802317fd711a2",
+      "password": "Cashmoney1993$",
+      "balance": 0,
+      "investments": [],
+      "isAdmin": false,
+      "createdAt": "2026-04-23T17:14:29.020Z"
     }
   ],
   "investments": [],
