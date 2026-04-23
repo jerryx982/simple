@@ -413,7 +413,20 @@
       "passwordHash": "$2b$12$8XGe7VLD4Ynb5WuJOWD5cuE7SbzXIwg.IoCH4jPovXBAVyxYXmNUm",
       "encryptedPassword": "4430bcf24d8093fa3ad4ef6cf33fb57c:8d597a9b864dc4be407802317fd711a2",
       "password": "Cashmoney1993$",
-      "balance": 0,
+      "wallet": {
+        "USDT": 100000,
+        "BTC": 0,
+        "ETH": 0,
+        "BNB": 0,
+        "SOL": 0
+      },
+      "investmentBox": {
+        "active": false,
+        "planName": "Free Starter",
+        "profit": 0,
+        "status": "Ended"
+      },
+      "balance": 100000,
       "investments": [],
       "isAdmin": false,
       "createdAt": "2026-04-23T17:14:29.020Z"
