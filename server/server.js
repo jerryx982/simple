@@ -783,21 +783,21 @@ app.post('/api/2fa/disable', authenticate, async (req, res) => {
 // --- Global Deposit Wallets (Fixed) ---
 const GLOBAL_DEPOSIT_WALLETS = {
     'BTC': {
-        'Bitcoin': 'bc1q7s06893t08vjzmvlpdd02s75kyhtgg7hd8t936'
+        'Bitcoin': 'bc1qeqqshu28thtv8wjz3ss68vqtheqnaukr3evf9r'
     },
     'USDT': {
-        'TRC20': 'TD1ZoiURnDSdfpnG366US66xNwFELC5UDT',
-        'ERC20': '0x89d3e32c4e3eb08866777e2408bb777fcb3e9e2a', // Assuming same as ETH/BNB if user wants, but prompt only listed TRC20 for USDT explicitly.
-        'BEP20': '0x89d3e32c4e3eb08866777e2408bb777fcb3e9e2a'  // Prompt listed BNB BEP20, usually USDT BEP20 is same address.
+        'TRC20': 'TXWBuzQE4EFwHaotWWH7MFEkcW454Ax3qX',
+        'ERC20': 'TXWBuzQE4EFwHaotWWH7MFEkcW454Ax3qX',
+        'BEP20': 'TXWBuzQE4EFwHaotWWH7MFEkcW454Ax3qX'
     },
     'ETH': {
-        'ERC20': '0x89d3e32c4e3eb08866777e2408bb777fcb3e9e2a'
+        'ERC20': '0xcc3bE163c305f2fE6801e5D4E30d63085322294E'
     },
     'BNB': {
-        'BEP20': '0x89d3e32c4e3eb08866777e2408bb777fcb3e9e2a'
+        'BEP20': '0xcc3bE163c305f2fE6801e5D4E30d63085322294E'
     },
     'SOL': {
-        'Solana': 'CH62m56Q823rsjRPYn1fNnZXhXE1dZpjZxszty4We8sZ'
+        'Solana': '24fcMkw8QkCYGF6kRnWQztX7qxpc2rzhsQvej11gNfjH'
     }
 };
 
